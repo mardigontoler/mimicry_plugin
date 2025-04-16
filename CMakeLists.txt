@@ -1,0 +1,130 @@
+cmake_minimum_required(VERSION 3.14)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Read the server version into a variable
+if (APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+    set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "") # must be set before project()
+    set(CMAKE_XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=Release] "YES")
+    set(CMAKE_XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=MinSizeRel] "YES")
+    set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=Release] "dwarf-with-dsym")
+    set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=MinSizeRel] "dwarf-with-dsym")
+    set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=RelWithDebInfo] "dwarf-with-dsym")
+endif()
+
+
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+    message(STATUS "Enabling parallel builds for MSVC")
+    add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+endif()
+
+# Set up the parent CMake project for the server binaries
+project(mimicry VERSION 0.1)
+message("-- MRWY_VERSION_STRING = ${MRWY_VERSION_STRING}")
+
+
+set(SRC ../src)
+set(LIB ../lib)
+
+# Present some cached options for customizing local MrWy builds.
+# These can be set in the cmake cache without worrying about accidentally committing them.
+# example : MRWY_EXAMPLE_OPTION will cause a variable with that name to appear in the variable list after configuration.
+# Enabling it will create a preprocessor define with the same name
+foreach(compOption
+    # Add options here
+    )
+        set(${compOption} OFF CACHE BOOL "")
+        if (${compOption})
+            add_compile_definitions(${compOption}=1)
+        else()
+            add_compile_definitions(${compOption}=0)
+        endif()
+endforeach()
+
+
+function (setupXCodeAutomaticSigning target)
+    if (APPLE)
+        set_property (TARGET ${target} PROPERTY XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "")
+        set_property (TARGET ${target} PROPERTY XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "-")
+        set_property (TARGET ${target} PROPERTY XCODE_ATTRIBUTE_CODE_SIGN_STYLE Automatic)
+    endif()
+endfunction()
+
+if (WIN32)
+    add_compile_definitions(UNICODE=1)
+    add_compile_definitions(_UNICODE=1)
+    add_compile_options("$<$<CONFIG:Release>:/Zi>")
+    add_link_options("$<$<CONFIG:Release>:/DEBUG>")
+    add_link_options("$<$<CONFIG:Release>:/OPT:REF>")
+    add_link_options("$<$<CONFIG:Release>:/OPT:ICF>")
+endif()
+
+
+if (APPLE)
+    add_compile_options("$<$<CONFIG:Release>:-g>")
+endif()
+
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(LibsFolderName "Libraries")
+
+set(JUCE_PATH "" CACHE PATH "Path to JUCE")
+
+set(JUCE_COPY_PLUGIN_AFTER_BUILD ON)
+set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
+add_subdirectory(${JUCE_PATH} build_juce)
+
+
+
+juce_add_binary_data(mimicry_binary_data
+    SOURCES
+        res/CinzelDecorative-Regular.ttf
+        res/Segment7-4Gml.otf
+        res/Ubuntu-Medium.ttf
+)
+
+
+
+juce_add_plugin(
+    mimicry
+    VERSION ${PROJECT_VERSION}
+    COMPANY_NAME "Mardigon Toler"
+    BUNDLE_ID "com.mardigontoler.mimicry"
+    FORMATS Standalone VST3 AU
+    PLUGIN_CODE "mQwp"
+)
+
+
+target_sources(mimicry PRIVATE
+
+    src/PluginProcessor.h
+    src/PluginProcessor.cpp
+    src/PluginEditor.h
+    src/PluginEditor.cpp
+    src/delay/MultiHeadDelayLine.h
+    src/delay/StereoMultiHeadDelayLine.h
+    src/gui/title/TitleLookAndFeel.h
+    src/gui/DelayControllerLookAndFeel.h
+    src/gui/DelayHeadController.cpp
+    src/gui/DelayHeadController.h
+    src/gui/font.h
+    src/gui/MimicryLookAndFeel.cpp
+    src/gui/MimicryLookAndFeel.h
+    src/gui/TempoDisplay.h
+    src/gui/WhiteLabelLookAndFeel.h
+    src/pitch/PhaseVocoder.cpp
+    src/pitch/PhaseVocoder.h
+    src/util/mimicry_util.h
+)
+
+target_link_libraries(mimicry
+    PRIVATE
+        mimicry_binary_data
+        juce::juce_audio_utils
+        juce::juce_dsp
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags
+)
