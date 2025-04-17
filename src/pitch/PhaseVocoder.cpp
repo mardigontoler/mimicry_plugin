@@ -144,6 +144,6 @@ void PhaseVocoder::setPitchShiftSemitones(float numSemitones) {
     synthesisHopSize = (int)(factor * (float)analysisHopSize);
 }
 
-int PhaseVocoder::getDelay() {
+int PhaseVocoder::getDelay() const {
     return analysisHopSize;
 }

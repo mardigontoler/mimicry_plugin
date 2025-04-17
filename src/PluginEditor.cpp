@@ -4,6 +4,9 @@
 #include "PluginEditor.h"
 #include "gui/font.h"
 
+using namespace juce;
+using namespace mimicry;
+
 //==============================================================================
 MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)

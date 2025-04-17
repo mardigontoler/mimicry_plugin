@@ -2,26 +2,23 @@
 
 #include "juce_core/juce_core.h"
 
-using namespace juce;
-
 
 template <class T>
 class MultiHeadDelayLine {
 
 public:
 
-    MultiHeadDelayLine(int numDelays)
+    explicit MultiHeadDelayLine(int numDelays)
             :
+            gains(numDelays, 0),
             targetReadHeads(numDelays, 0),
             smoothedReadHeads(numDelays, 0),
             deltaSmoothReads(numDelays, 1),
             currentDelays(numDelays, 0),
             remainingStepsAtAlteredRate(numDelays, 0),
-            initialDelaysSet(numDelays, false),
 
-            gains(numDelays, 0)
+            initialDelaysSet(numDelays, false)
     {
-
     }
 
     ~MultiHeadDelayLine() = default;
@@ -88,7 +85,7 @@ public:
 
             // set the delta for this head so that it will be at the target within .5 seconds
             //float distanceToNewTarget = smoothedReadHeads[i] - targetReadHeads[i];
-            size_t numSamplesToGetToTarget = sampleRate * 0.5f;
+            auto numSamplesToGetToTarget =  static_cast<size_t> ( static_cast<float>(sampleRate) * 0.5f );
             remainingStepsAtAlteredRate[i] = numSamplesToGetToTarget;
 
             // calculate where the target will be by the time we want to meet it
@@ -101,7 +98,7 @@ public:
                 currentReadHead -= size;
             }
             // then set the delta
-            deltaSmoothReads[i] = (projectedTargetReadHead - smoothedReadHeads[i]) / numSamplesToGetToTarget;
+            deltaSmoothReads[i] = (projectedTargetReadHead - smoothedReadHeads[i]) / static_cast<float>(numSamplesToGetToTarget);
 
 
         }
@@ -114,7 +111,7 @@ public:
         std::fill(delayLineData.begin(), delayLineData.end(), 0);
     }
 
-    int getNumHeads(){return targetReadHeads.size();}
+    [[nodiscard]] int getNumHeads() const {return targetReadHeads.size();}
 
     void setGain(size_t i, float gain){
         gains[i] = gain;

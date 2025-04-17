@@ -5,28 +5,18 @@
 #include "font.h"
 #include "juce_gui_basics/juce_gui_basics.h"
 
-using namespace juce;
-
 namespace mimicry {
 
-    class MimicryLookAndFeel : public LookAndFeel_V4 {
+    class MimicryLookAndFeel : public juce::LookAndFeel_V4 {
 
 
     public:
 
-        Colour MIMICRY_GRAY = Colour::fromRGB(196,196,196);
+        juce::Colour MIMICRY_GRAY = juce::Colour::fromRGB(196,196,196);
 
-        MimicryLookAndFeel() {
-            setColour(Label::textColourId, Colour::fromRGB(30, 142, 177));
-            setColour(Label::backgroundColourId, Colour::fromRGB(22,22,22));
-            setColour(ResizableWindow::backgroundColourId, Colour::fromRGB(6, 7, 14));
-            setColour(Slider::rotarySliderOutlineColourId, Colour::fromRGB(30, 177, 175));
-            setColour(Slider::rotarySliderFillColourId, Colour::fromRGB(62,71,73));
-            setColour(Slider::backgroundColourId, Colour::fromRGB(62,71,73));
-            setColour(Slider::thumbColourId, Colour::fromRGB(30,142,177));
-        }
+        MimicryLookAndFeel();
 
-        Font getLabelFont(Label& label) override
+        juce::Font getLabelFont(juce::Label& label) override
         {
             return mimicry::getNormalFont(15);
         }
@@ -53,7 +43,7 @@ namespace mimicry {
 //            }
 //        }
 
-        void drawTickBox(Graphics& g, Component& component,
+        void drawTickBox(juce::Graphics& g, juce::Component& component,
             float x, float y, float w, float h,
             bool ticked,
             bool isEnabled,
@@ -64,21 +54,21 @@ namespace mimicry {
 
             auto isDownOrDragging = component.isEnabled() && (component.isMouseOverOrDragging() || component.isMouseButtonDown());
 
-            auto colour = component.findColour(TextButton::buttonOnColourId)
+            auto colour = component.findColour(juce::TextButton::buttonOnColourId)
                 .withMultipliedSaturation((component.hasKeyboardFocus(false) || isDownOrDragging) ? 1.3f : 0.9f)
                 .withMultipliedAlpha(component.isEnabled() ? 1.0f : 0.7f);
 
             g.setColour(colour);
 
-            Rectangle<float> r(x, y + (h - boxSize) * 0.5f, boxSize, boxSize);
+            juce::Rectangle<float> r(x, y + (h - boxSize) * 0.5f, boxSize, boxSize);
             g.fillRect(r);
 
             if (ticked)
             {
                 auto tickPath = LookAndFeel_V4::getTickShape(6.0f);
-                g.setColour(isEnabled ? findColour(TextButton::buttonColourId) : Colours::grey);
+                g.setColour(isEnabled ? findColour(juce::TextButton::buttonColourId) : juce::Colours::grey);
 
-                auto transform = RectanglePlacement(RectanglePlacement::centred)
+                auto transform = juce::RectanglePlacement(juce::RectanglePlacement::centred)
                     .getTransformToFit(tickPath.getBounds(),
                         r.reduced(r.getHeight() * 0.05f));
 
@@ -88,7 +78,7 @@ namespace mimicry {
 
 
 
-        int getSliderThumbRadius(Slider& slider) override{
+        int getSliderThumbRadius(juce::Slider& slider) override{
             return thumbRadius;
         }
 
@@ -97,9 +87,9 @@ namespace mimicry {
         }
 
 
-        void drawLinearSlider (Graphics& g, int x, int y, int width, int height,
+        void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height,
                 float sliderPos, float minSliderPos, float maxSliderPos,
-                const Slider::SliderStyle style, Slider& slider) override
+                const juce::Slider::SliderStyle style, juce::Slider& slider) override
         {
 
             float thumbSize = 30.0f;
@@ -109,23 +99,23 @@ namespace mimicry {
             auto centreX = x + width * 0.5f;
             auto centreY = y + height * 0.5f;
 
-            if (style == Slider::LinearVertical) {
+            if (style == juce::Slider::LinearVertical) {
                 // draw the slider track
-                Rectangle<float> r(centreX - (trackThickness / 2.0f), y, trackThickness, height);
-                g.setColour(slider.findColour(Slider::backgroundColourId));
+                juce::Rectangle<float> r(centreX - (trackThickness / 2.0f), y, trackThickness, height);
+                g.setColour(slider.findColour(juce::Slider::backgroundColourId));
                 g.drawRoundedRectangle(r, 4.0f, trackThickness);
 
                 // draw the thumb and notch
-                Rectangle<float> thumbRect(
+                juce::Rectangle<float> thumbRect(
                         centreX - (thumbThickness / 2.0f),
                         sliderPos - (thumbSize / 2.0f),
                         thumbThickness,
                         thumbSize
                         );
-                g.setColour(slider.findColour(Slider::thumbColourId));
+                g.setColour(slider.findColour(juce::Slider::thumbColourId));
                 g.fillRoundedRectangle(thumbRect, 2.0f);
 
-                Rectangle<float> notchRect(
+                juce::Rectangle<float> notchRect(
                         centreX - (thumbThickness / 2.0f),
                         sliderPos,
                         thumbThickness,
@@ -135,7 +125,7 @@ namespace mimicry {
                 g.fillRect(notchRect);
 
             }
-            else if(style == Slider::LinearHorizontal){
+            else if(style == juce::Slider::LinearHorizontal){
                 // todo if needed
             }
 
@@ -143,9 +133,10 @@ namespace mimicry {
 
 
 
-        void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
-            float rotaryStartAngle, float rotaryEndAngle, Slider& slider) override
+        void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos,
+            float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
         {
+            using namespace juce;
             auto diameter = jmin(width, height) - 4.0f;
             auto radius = (diameter / 2.0f) * std::cos(MathConstants<float>::pi / 4.0f);
             auto centreX = x + width * 0.5f;
@@ -184,7 +175,8 @@ namespace mimicry {
         }
 
 
-        void drawLabel(Graphics& g, Label& label) override {
+        void drawLabel(juce::Graphics& g, juce::Label& label) override {
+            using namespace juce;
             //g.fillAll(label.findColour(Label::backgroundColourId));
             //g.fillRoundedRectangle(g.getClipBounds().toFloat(), 5);
             //g.fillRect(g.getClipBounds().toFloat());

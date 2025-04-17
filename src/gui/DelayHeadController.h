@@ -10,20 +10,19 @@
 
 #include "juce_audio_processors/juce_audio_processors.h"
 
-using namespace juce;
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
 
-class DelayHeadController : public Component {
+class DelayHeadController : public juce::Component {
 public:
     DelayHeadController() {
-        delayGainSlider.setSliderStyle(Slider::SliderStyle::LinearVertical);
-        delayGainSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+        delayGainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+        delayGainSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
 
 
         // set up the semitones knob to have an editable textbox
-        semitonesKnob.setSliderStyle(Slider::SliderStyle::Rotary);
-        semitonesKnob.setTextBoxStyle(Slider::TextBoxBelow, false, 100, semitonesTextboxHeight);
+        semitonesKnob.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+        semitonesKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, semitonesTextboxHeight);
 
         addAndMakeVisible(&delayGainSlider);
         addAndMakeVisible(&semitonesKnob);
@@ -32,16 +31,16 @@ public:
 
 
 
-    void resetDelayGainAttachment(AudioProcessorValueTreeState& valueTreeState, String& param){
+    void resetDelayGainAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param){
         delayGainAttachment.reset(new SliderAttachment(valueTreeState, param, delayGainSlider));
     }
 
-    void resetSemitoneAttachment(AudioProcessorValueTreeState& valueTreeState, String& param){
+    void resetSemitoneAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param){
         semitoneAttachment.reset(new SliderAttachment(valueTreeState, param, semitonesKnob));
     }
 
     void resized() override {
-        Rectangle<int> area = getLocalBounds();
+        juce::Rectangle<int> area = getLocalBounds();
 
         int height = area.getHeight();
 
@@ -57,9 +56,8 @@ private:
 
     int semitonesKnobSpace = 65;
     int semitonesTextboxHeight = 15;
-    Slider delayGainSlider;
-    Slider semitonesKnob;
-
+    juce::Slider delayGainSlider;
+    juce::Slider semitonesKnob;
 
     std::unique_ptr<SliderAttachment> delayGainAttachment;
     std::unique_ptr<SliderAttachment> semitoneAttachment;

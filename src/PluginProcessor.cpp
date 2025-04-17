@@ -4,7 +4,9 @@
 
 
 using namespace mimicry;
-//==============================================================================
+using namespace juce;
+
+
 MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
     BusesProperties()
         .withInput  ("Input",  juce::AudioChannelSet::mono(), true)
@@ -34,7 +36,7 @@ MimicAudioProcessor::~MimicAudioProcessor()
 
 
 AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParameterLayout(){
-    
+
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
     // fixed params
     params.push_back(
@@ -145,7 +147,7 @@ void MimicAudioProcessor::changeProgramName (int index, const juce::String& newN
 //==============================================================================
 void MimicAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    size_t maxDelayLength = 5 * sampleRate; // TODO update this
+    const auto maxDelayLength = static_cast<size_t>( 5.0 * sampleRate ); // TODO update this
 
     multiDelayLines.resize(maxDelayLength);
     for (size_t i = 0; i < multiDelayLines.getNumHeads(); i++) {
@@ -278,11 +280,6 @@ void MimicAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
 
 
-
-
-
-
-
 //==============================================================================
 bool MimicAudioProcessor::hasEditor() const
 {
@@ -331,7 +328,7 @@ void MimicAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 }
 
 
-juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MimicAudioProcessor();
 }

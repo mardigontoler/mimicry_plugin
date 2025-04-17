@@ -7,9 +7,9 @@
 
 namespace mimicry {
     // constants
-    const int numStereoDelayLines = 16;
-    const double MIN_TEMPO = 30.0f; // bpm
-    const double MAX_TEMPO = 200.0f;
+    constexpr int numStereoDelayLines = 16;
+    constexpr double MIN_TEMPO = 30.0f; // bpm
+    constexpr double MAX_TEMPO = 200.0f;
 
 }
 //==============================================================================

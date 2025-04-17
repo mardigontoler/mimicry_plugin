@@ -8,11 +8,11 @@ namespace mimicry_util {
     For example, at fs=44.1khz and 120bpm, an eight note (beatDivider = 2)
     would last for 
     */
-    long getSamplesPerSubdivision(double beatsPerMinute, double sampleRate, float beatDivider) {
+    inline long getSamplesPerSubdivision(double beatsPerMinute, double sampleRate, float beatDivider) {
         double beatsPerSecond = beatsPerMinute / 60.0f;
         double samplesPerBeat = sampleRate / beatsPerSecond;
         double samplesPerInterval = samplesPerBeat * beatDivider;
-        return (long)samplesPerInterval;
+        return static_cast<long>(samplesPerInterval);
     }
 
 

@@ -10,28 +10,22 @@
 #include "gui/WhiteLabelLookAndFeel.h"
 #include "gui/DelayControllerLookAndFeel.h"
 
-using namespace mimicry;
-using namespace juce;
-
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 
 //==============================================================================
 /**
 */
-class MimicAudioProcessorEditor  : public AudioProcessorEditor, public Button::Listener
+class MimicAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::Button::Listener
 {
 public:
-    MimicAudioProcessorEditor (MimicAudioProcessor&, AudioProcessorValueTreeState&);
-    ~MimicAudioProcessorEditor();
+    MimicAudioProcessorEditor (MimicAudioProcessor&, juce::AudioProcessorValueTreeState&);
+    ~MimicAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-
-
-
 
 private:
 
@@ -39,66 +33,69 @@ private:
     MimicAudioProcessor& processor;
 
     // reference to the audio paramter tree
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
-    MimicryLookAndFeel mimicryLookAndFeel;
+    mimicry::MimicryLookAndFeel mimicryLookAndFeel;
     TitleLookAndFeel titleLookAndFeel;
     SubTitleLookAndFeel subTitleLookAndFeel;
-    class DigitalLookAndFeel : public MimicryLookAndFeel{
-        Font getLabelFont(Label& label) override {
+
+    class DigitalLookAndFeel : public mimicry::MimicryLookAndFeel
+    {
+        juce::Font getLabelFont(juce::Label& label) override
+        {
             return mimicry::getSegmentFont(50);
         }
     public:
         DigitalLookAndFeel(){
-            setColour(Label::textColourId, Colour::fromRGBA(45, 255, 180, 150));
-            setColour(Label::backgroundColourId, Colours::black);
+            setColour(juce::Label::textColourId, juce::Colour::fromRGBA(45, 255, 180, 150));
+            setColour(juce::Label::backgroundColourId, juce::Colours::black);
         }
     } digitalLookAndFeel;
 
 
-    WhiteLabelLookAndFeel whiteLabelLookAndFeel;
-    DelayControllerLookAndFeel delayControllerLookAndFeel;
+    mimicry::WhiteLabelLookAndFeel whiteLabelLookAndFeel;
+    mimicry::DelayControllerLookAndFeel delayControllerLookAndFeel;
 
     // listener callback
-    void buttonStateChanged(Button*) override;
-    void buttonClicked(Button*) override;
+    void buttonStateChanged(juce::Button*) override;
+    void buttonClicked(juce::Button*) override;
 
     // child components
     //=======================
     TempoDisplay tempoDisplay;
 
-    Slider mixKnob;
+    juce::Slider mixKnob;
     std::unique_ptr<SliderAttachment> mixAttachment; // attach slider to processor param
 
-    Slider tempoKnob;
+    juce::Slider tempoKnob;
     std::unique_ptr<SliderAttachment> tempoKnobAttachment;
 
-    Slider divisionKnob;
+    juce::Slider divisionKnob;
     std::unique_ptr<SliderAttachment> divisionKnobAttachment;
 
     
-    TextButton tempoSyncBtn;
+    juce::TextButton tempoSyncBtn;
     std::unique_ptr<ButtonAttachment> tempoSyncBtnAttachment;
 
 
     // areas to place components
-    Rectangle<int> area;
-    Rectangle<int> leftArea;
-    Rectangle<int> headerArea;
-    Rectangle<int> delayHeadsArea;
-    Rectangle<int> delayHeadsTopArea;
-    Rectangle<int> delayHeadsBottomArea;
+    juce::Rectangle<int> area;
+    juce::Rectangle<int> leftArea;
+    juce::Rectangle<int> headerArea;
+    juce::Rectangle<int> delayHeadsArea;
+    juce::Rectangle<int> delayHeadsTopArea;
+    juce::Rectangle<int> delayHeadsBottomArea;
 
-    Label titleLabel;
-    Label subTitleLabel;
-    Label tempoLabel;
-    Label divLabel;
-    Label mixLabel;
+    juce::Label titleLabel;
+    juce::Label subTitleLabel;
+    juce::Label tempoLabel;
+    juce::Label divLabel;
+    juce::Label mixLabel;
 
     // array of sliders for the rhythm parameters
-    OwnedArray<DelayHeadController> delayHeadControllers;
-    OwnedArray<SliderAttachment> rhythmSliderAttachments;
+    juce::OwnedArray<DelayHeadController> delayHeadControllers;
+    juce::OwnedArray<SliderAttachment> rhythmSliderAttachments;
 
     //========================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MimicAudioProcessorEditor);

@@ -6,14 +6,14 @@
 /**
 * Simple component that's just a rectange with a label.
 */
-class TempoDisplay : public Component, public Slider::Listener
+class TempoDisplay : public juce::Component, public juce::Slider::Listener
 {
 public:
     TempoDisplay() {
-        tempoLabel.setText("120", NotificationType::dontSendNotification);
-        glowLabel.setText("120", NotificationType::dontSendNotification);
-        tempoLabel.setJustificationType(Justification::right);
-        glowLabel.setJustificationType(Justification::right);
+        tempoLabel.setText("120", juce::NotificationType::dontSendNotification);
+        glowLabel.setText("120", juce::NotificationType::dontSendNotification);
+        tempoLabel.setJustificationType(juce::Justification::right);
+        glowLabel.setJustificationType(juce::Justification::right);
         tempoLabel.setMinimumHorizontalScale(1.0f);
         glowLabel.setMinimumHorizontalScale(1.0f);
 
@@ -21,13 +21,14 @@ public:
         addAndMakeVisible(glowLabel, 1);
     }
 
-    void paint(Graphics& g) override
+    void paint(juce::Graphics& g) override
     {
-        g.setColour(getLookAndFeel().findColour(Label::backgroundColourId));
+        g.setColour(getLookAndFeel().findColour(juce::Label::backgroundColourId));
         g.fillRoundedRectangle(getLocalBounds().toFloat(), 5);
     }
 
     void resized() override {
+        using namespace juce;
 //        tempoLabel.setBounds(getLocalBounds());
         Rectangle<int> localBounds = getLocalBounds();
         Rectangle<int> textBoxBounds(
@@ -48,7 +49,8 @@ public:
 
     }
 
-    void sliderValueChanged(Slider* slider) override{
+    void sliderValueChanged(juce::Slider* slider) override{
+        using namespace juce;
         int tempo = (int)slider->getValue();
         String str = String(tempo);
         tempoLabel.setText(str, dontSendNotification);
@@ -57,8 +59,8 @@ public:
 
 
 private:
-    Label tempoLabel;
-    Label glowLabel;
+    juce::Label tempoLabel;
+    juce::Label glowLabel;
 
 //    GlowEffect glowEffect;
 

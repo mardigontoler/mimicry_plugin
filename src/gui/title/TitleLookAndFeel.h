@@ -6,22 +6,20 @@
 #include "../font.h"
 #include "../MimicryLookAndFeel.h"
 
-using namespace juce;
-using namespace mimicry;
-
-class TitleLookAndFeel: public LookAndFeel_V4 {
+class TitleLookAndFeel: public juce::LookAndFeel_V4 {
 
 
-    Font getLabelFont(Label& label) override {
+    juce::Font getLabelFont(juce::Label& label) override
+    {
         return mimicry::getHeaderFont(50);
     }
 
 };
 
 
-class SubTitleLookAndFeel : public MimicryLookAndFeel {
-private:
-    Font getLabelFont(Label& label) override
+class SubTitleLookAndFeel : public mimicry::MimicryLookAndFeel {
+
+    juce::Font getLabelFont(juce::Label& label) override
     {
         return mimicry::getNormalFont(12);
     }
