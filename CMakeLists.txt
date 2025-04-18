@@ -112,6 +112,7 @@ target_sources(mimicry PRIVATE
     src/gui/MimicryLookAndFeel.cpp
     src/gui/MimicryLookAndFeel.h
     src/gui/TempoDisplay.h
+    src/gui/TempoDisplay.cpp
     src/gui/WhiteLabelLookAndFeel.h
     src/pitch/PhaseVocoder.cpp
     src/pitch/PhaseVocoder.h

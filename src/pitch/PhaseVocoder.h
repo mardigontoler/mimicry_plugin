@@ -11,8 +11,7 @@ public:
 
     PhaseVocoder();
 
-    ~PhaseVocoder()
-    = default;
+    ~PhaseVocoder() = default;
 
     void pushSample(float sample) noexcept;
 
@@ -29,7 +28,7 @@ private:
     static constexpr int analysisOverlapFactor = 8;
     int analysisHopSize = N / analysisOverlapFactor;
     float factor = 1.0f;
-    int synthesisHopSize = (int)(factor * (float)analysisHopSize);
+    int synthesisHopSize = static_cast<int>(factor * static_cast<float>(analysisHopSize));
 
     static constexpr float maxFactor = 2.0f;
     static constexpr float minFactor = 0.5f;
@@ -46,8 +45,10 @@ private:
 
     std::array<float, N> oldInputPhases{};
     std::array<float, N> oldOutputPhases{};
-    std::array<float, (4*N*(int)maxFactor)> outputData{};
-    std::array<float, N> omegas{}; // this is constant for N. represents relative frequency changes across bins
+    std::array<float, (4*N*static_cast<int>(maxFactor))> outputData{};
+
+    // These stays constant for a particular value of N. Represents how much to propgate the phase of each frequency bin
+    std::array<float, N> omegas{};
 
     bool outputReady = false;
 
@@ -55,7 +56,7 @@ private:
     int fifosWritten = 0;
     int fifoRead = 0;
     int lastLeftIndex = 0;
-    float outputIndex = 0;
+    double outputIndex = 0;
 
     void phaseCorrect();
 };

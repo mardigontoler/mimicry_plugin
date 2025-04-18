@@ -16,13 +16,10 @@ namespace mimicry {
 
         MimicryLookAndFeel();
 
-        juce::Font getLabelFont(juce::Label& label) override
-        {
-            return mimicry::getNormalFont(15);
-        }
+        juce::Font getLabelFont(juce::Label& label) override;
 
 
-//        void drawButtonBackground(Graphics& g, Button& button, const Colour& backgroundColour,
+        //        void drawButtonBackground(Graphics& g, Button& button, const Colour& backgroundColour,
 //            bool isMouseOverButton, bool isButtonDown) override
 //        {
 //            auto baseColour = backgroundColour.withMultipliedSaturation(button.hasKeyboardFocus(true) ? 1.3f : 0.9f)
@@ -48,34 +45,7 @@ namespace mimicry {
             bool ticked,
             bool isEnabled,
             bool isMouseOverButton,
-            bool isButtonDown) override
-        {
-            auto boxSize = w * 0.7f;
-
-            auto isDownOrDragging = component.isEnabled() && (component.isMouseOverOrDragging() || component.isMouseButtonDown());
-
-            auto colour = component.findColour(juce::TextButton::buttonOnColourId)
-                .withMultipliedSaturation((component.hasKeyboardFocus(false) || isDownOrDragging) ? 1.3f : 0.9f)
-                .withMultipliedAlpha(component.isEnabled() ? 1.0f : 0.7f);
-
-            g.setColour(colour);
-
-            juce::Rectangle<float> r(x, y + (h - boxSize) * 0.5f, boxSize, boxSize);
-            g.fillRect(r);
-
-            if (ticked)
-            {
-                auto tickPath = LookAndFeel_V4::getTickShape(6.0f);
-                g.setColour(isEnabled ? findColour(juce::TextButton::buttonColourId) : juce::Colours::grey);
-
-                auto transform = juce::RectanglePlacement(juce::RectanglePlacement::centred)
-                    .getTransformToFit(tickPath.getBounds(),
-                        r.reduced(r.getHeight() * 0.05f));
-
-                g.fillPath(tickPath, transform);
-            }
-        }
-
+            bool isButtonDown) override;
 
 
         int getSliderThumbRadius(juce::Slider& slider) override{

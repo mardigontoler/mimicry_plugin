@@ -40,20 +40,6 @@ private:
     TitleLookAndFeel titleLookAndFeel;
     SubTitleLookAndFeel subTitleLookAndFeel;
 
-    class DigitalLookAndFeel : public mimicry::MimicryLookAndFeel
-    {
-        juce::Font getLabelFont(juce::Label& label) override
-        {
-            return mimicry::getSegmentFont(50);
-        }
-    public:
-        DigitalLookAndFeel(){
-            setColour(juce::Label::textColourId, juce::Colour::fromRGBA(45, 255, 180, 150));
-            setColour(juce::Label::backgroundColourId, juce::Colours::black);
-        }
-    } digitalLookAndFeel;
-
-
     mimicry::WhiteLabelLookAndFeel whiteLabelLookAndFeel;
     mimicry::DelayControllerLookAndFeel delayControllerLookAndFeel;
 

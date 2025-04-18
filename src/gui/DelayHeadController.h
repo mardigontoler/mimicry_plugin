@@ -15,25 +15,9 @@ typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
 class DelayHeadController : public juce::Component {
 public:
-    DelayHeadController() {
-        delayGainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-        delayGainSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
+    DelayHeadController();
 
-
-        // set up the semitones knob to have an editable textbox
-        semitonesKnob.setSliderStyle(juce::Slider::SliderStyle::Rotary);
-        semitonesKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, semitonesTextboxHeight);
-
-        addAndMakeVisible(&delayGainSlider);
-        addAndMakeVisible(&semitonesKnob);
-
-    }
-
-
-
-    void resetDelayGainAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param){
-        delayGainAttachment.reset(new SliderAttachment(valueTreeState, param, delayGainSlider));
-    }
+    void resetDelayGainAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
 
     void resetSemitoneAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param){
         semitoneAttachment.reset(new SliderAttachment(valueTreeState, param, semitonesKnob));

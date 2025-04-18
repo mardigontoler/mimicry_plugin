@@ -2,10 +2,27 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "gui/font.h"
+
+#include <memory>
 
 using namespace juce;
 using namespace mimicry;
+
+
+class DigitalLookAndFeel : public MimicryLookAndFeel
+{
+    Font getLabelFont(juce::Label& label) override
+    {
+        return getSegmentFont(50);
+    }
+public:
+    DigitalLookAndFeel(){
+        setColour(Label::textColourId, Colour::fromRGBA(45, 255, 180, 150));
+        setColour(Label::backgroundColourId, Colours::black);
+    }
+} digitalLookAndFeel;
+
+
 
 //==============================================================================
 MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, AudioProcessorValueTreeState& vts)
@@ -83,12 +100,10 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
 
 
     // connect components to processor
-    mixAttachment.reset(new SliderAttachment(valueTreeState, "mix", mixKnob));
-    tempoKnobAttachment.reset(new SliderAttachment(valueTreeState, "bpm", tempoKnob));
-    tempoSyncBtnAttachment.reset(new ButtonAttachment(valueTreeState, "tempoSync", tempoSyncBtn));
-    divisionKnobAttachment.reset(new SliderAttachment(valueTreeState, "division", divisionKnob));
-
-
+    mixAttachment = std::make_unique<SliderAttachment>(valueTreeState, "mix", mixKnob);
+    tempoKnobAttachment = std::make_unique<SliderAttachment>(valueTreeState, "bpm", tempoKnob);
+    tempoSyncBtnAttachment = std::make_unique<ButtonAttachment>(valueTreeState, "tempoSync", tempoSyncBtn);
+    divisionKnobAttachment = std::make_unique<SliderAttachment>(valueTreeState, "division", divisionKnob);
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -121,10 +136,13 @@ void MimicAudioProcessorEditor::resized()
     leftArea = area.removeFromLeft(210);
     headerArea = leftArea.removeFromTop(50);
     delayHeadsArea = area.reduced(0, 5);
-    delayHeadsTopArea = area.removeFromTop((int)(area.getHeight() / 2.0f)).reduced(30, 15);
+    delayHeadsTopArea = area.removeFromTop(static_cast<int>(
+        static_cast<float>(area.getHeight()) / 2.0f))
+        .reduced(30, 15);
+
     delayHeadsBottomArea = area.reduced(30, 15);
 
-    Rectangle<int> titleLabelArea = headerArea.removeFromTop((int)(2.0 * headerArea.getHeight() / 3.0f));
+    Rectangle<int> titleLabelArea = headerArea.removeFromTop(static_cast<int>(2.0 * headerArea.getHeight() / 3.0f));
     titleLabelArea.translate(-3, 10);
     titleLabel.setBounds(titleLabelArea);
 
@@ -133,12 +151,12 @@ void MimicAudioProcessorEditor::resized()
     subTitleLabel.setBounds(subTitleArea);
 
     // place components in sidebar
-    int labelAreaAmount = 20;
-    int labelMargin = 0;
-    int knobSize = 75;
-    int knobXMargin = 0;
-    int knobYMargin = 0;
-    int spacerSize = 30;
+    constexpr int labelAreaAmount = 20;
+    constexpr int labelMargin = 0;
+    constexpr int knobSize = 75;
+    constexpr int knobXMargin = 0;
+    constexpr int knobYMargin = 0;
+    constexpr int spacerSize = 30;
 
     Rectangle<int> leftBar = leftArea; // copy rectangle
     leftBar.removeFromTop(15);
@@ -162,16 +180,14 @@ void MimicAudioProcessorEditor::resized()
 
 
     // place delay line components on right side in two rows
-    int delayHeadsPerRow = numStereoDelayLines / 2;
-    int delayHeadControllerSpacing = delayHeadsTopArea.getWidth() / delayHeadsPerRow;
+    constexpr int delayHeadsPerRow = numStereoDelayLines / 2;
+    const int delayHeadControllerSpacing = delayHeadsTopArea.getWidth() / delayHeadsPerRow;
     for(int i = 0; i < numStereoDelayLines; i++){
         if(i < delayHeadsPerRow)
             delayHeadControllers[i]->setBounds(delayHeadsTopArea.removeFromLeft(delayHeadControllerSpacing));
         else
             delayHeadControllers[i]->setBounds(delayHeadsBottomArea.removeFromLeft(delayHeadControllerSpacing));
     }
-
-
 
 }
 

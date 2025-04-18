@@ -10,7 +10,7 @@ PhaseVocoder::PhaseVocoder()
 {
     for(int k = 0; k < N; k++)
     {
-        omegas[k] = (tau * k) / N;
+        omegas[k] = (tau * static_cast<float>(k)) / N;
     }
 }
 
@@ -64,14 +64,14 @@ void PhaseVocoder::pushSample(float sample) noexcept {
             for (int i = 0; i < N; i++) {
                 // scale amplitude down by number of overlapping windows, and write to output buffer, directly where
                 // it's being read from
-                outputData[((int) floor(outputIndex) + i) % outputData.size()] +=
-                        tmp[i] / ((float) analysisOverlapFactor);
+                outputData[(static_cast<int>(floor(outputIndex)) + i) % outputData.size()] +=
+                        tmp[i] / static_cast<float>(analysisOverlapFactor);
             }
         }
         else { // factor is 1, so don't pitch shift
             // pass the new fifo samples straight to the output buffer
             for (int i = 0; i < analysisHopSize; i++) {
-                outputData[((int)floor(outputIndex) + i) % outputData.size() ] = fifo[(fifoRead + i) % N];
+                outputData[(static_cast<int>(floor(outputIndex)) + i) % outputData.size() ] = fifo[(fifoRead + i) % N];
             }
         }
 
@@ -88,19 +88,19 @@ float PhaseVocoder::nextSample() {
     {
         // move the output read head by the ratio
         // Return linearly interpolated values.
-        int leftIndex = floor(outputIndex);
-        float sample1 = outputData[leftIndex];
-        float frac = outputIndex - (float)leftIndex;
+        const int leftIndex = floor(outputIndex);
+        const double sample1 = outputData[leftIndex];
+        const auto frac = outputIndex - static_cast<double>(leftIndex);
         outputIndex += factor;
-        while(outputIndex >= outputData.size())
+        while(static_cast<size_t>(outputIndex) >= outputData.size())
         {
-            outputIndex -= outputData.size();
+            outputIndex -= static_cast<double>(outputData.size());
         }
-        int rightIndex = (leftIndex + 1) % (int)outputData.size();
-        float sample2 = outputData[rightIndex];
+        const int rightIndex = (leftIndex + 1) % static_cast<int>(outputData.size());
+        const double sample2 = outputData[rightIndex];
 
         // erase an output buffer sample once the smoothed output read head moves past it completely
-        int clearIndex = lastLeftIndex;
+        size_t clearIndex = lastLeftIndex;
         while(clearIndex != leftIndex)
         {
             outputData[clearIndex] = 0;
@@ -108,12 +108,10 @@ float PhaseVocoder::nextSample() {
         }
         lastLeftIndex = leftIndex;
 
-        return sample1 + frac * (sample2 - sample1);
+        return static_cast<float>(sample1 + frac * (sample2 - sample1));
 
     }
-    else {
-        return 0;
-    }
+    return 0;
 }
 
 
@@ -122,14 +120,14 @@ void PhaseVocoder::phaseCorrect() {
 
     for(int i = 0 ; i < N; i++) {
 
-        float inputPhase = std::arg(freqFftData[i]);
-        float omega = omegas[i];
-        float deltaInputPhase = inputPhase - oldInputPhases[i] - ((float)analysisHopSize * omega);
+        const float inputPhase = std::arg(freqFftData[i]);
+        const float omega = omegas[i];
+        float deltaInputPhase = inputPhase - oldInputPhases[i] - (static_cast<float>(analysisHopSize) * omega);
         deltaInputPhase = deltaInputPhase - tau * round(deltaInputPhase / tau);
         oldInputPhases[i] = inputPhase;
-        float instantaneousFrequency = omega + (deltaInputPhase / (float)analysisHopSize);
+        float instantaneousFrequency = omega + (deltaInputPhase / static_cast<float>(analysisHopSize));
 
-        float outputPhase = oldOutputPhases[i] +((float)synthesisHopSize * instantaneousFrequency);
+        float outputPhase = oldOutputPhases[i] +(static_cast<float>(synthesisHopSize) * instantaneousFrequency);
         outputPhase -= tau * round(outputPhase / tau);
 
         oldOutputPhases[i] = outputPhase;
@@ -139,9 +137,9 @@ void PhaseVocoder::phaseCorrect() {
     }
 }
 
-void PhaseVocoder::setPitchShiftSemitones(float numSemitones) {
-    factor = pow(2,  numSemitones /12.0f);
-    synthesisHopSize = (int)(factor * (float)analysisHopSize);
+void PhaseVocoder::setPitchShiftSemitones(const float numSemitones) {
+    factor = static_cast<float>(pow(2,  numSemitones / 12.0f));
+    synthesisHopSize = static_cast<int>(factor * static_cast<float>(analysisHopSize));
 }
 
 int PhaseVocoder::getDelay() const {

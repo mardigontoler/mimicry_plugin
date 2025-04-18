@@ -9,11 +9,11 @@ using namespace juce;
 
 MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
     BusesProperties()
-        .withInput  ("Input",  juce::AudioChannelSet::mono(), true)
-        .withOutput ("Output Dry", juce::AudioChannelSet::mono(), true)
-        //.withOutput ("Output Wet", juce::AudioChannelSet::stereo(), true)
+        .withInput  ("Input",  AudioChannelSet::mono(), true)
+        .withOutput ("Output Dry", AudioChannelSet::mono(), true)
+        //.withOutput ("Output Wet", AudioChannelSet::stereo(), true)
     ),
-    parameters(*this, nullptr, juce::Identifier("Mimicry"), createParameterLayout()),
+    parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
     multiDelayLines(numStereoDelayLines)
 
 {
@@ -40,7 +40,7 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
     // fixed params
     params.push_back(
-        std::make_unique<juce::AudioParameterFloat>(
+        std::make_unique<AudioParameterFloat>(
             "bpm",
             "BPM",
             MIN_TEMPO,
@@ -48,13 +48,13 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
             120.0f)
     );
     params.push_back(
-        std::make_unique<juce::AudioParameterBool>(
+        std::make_unique<AudioParameterBool>(
             "tempoSync",
             "Tempo Sync",
             false)
     );
     params.push_back(
-        std::make_unique<juce::AudioParameterFloat>(
+        std::make_unique<AudioParameterFloat>(
             "mix",
             "Mix",
             0.0f,
@@ -62,7 +62,7 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
             0.5f)
     );
     params.push_back(
-        std::make_unique<juce::AudioParameterInt>(
+        std::make_unique<AudioParameterInt>(
             "division",
             "Division",
             1,
@@ -96,7 +96,7 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
 
 
 //==============================================================================
-const juce::String MimicAudioProcessor::getName() const
+const String MimicAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
@@ -135,12 +135,12 @@ void MimicAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const juce::String MimicAudioProcessor::getProgramName (int index)
+const String MimicAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void MimicAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void MimicAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
@@ -167,11 +167,11 @@ void MimicAudioProcessor::releaseResources()
 bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
 
-    const juce::AudioChannelSet& mainInputChannelSet = layouts.getMainInputChannelSet();
-    const juce::AudioChannelSet& mainOutputChannelSet = layouts.getMainOutputChannelSet();
+    const AudioChannelSet& mainInputChannelSet = layouts.getMainInputChannelSet();
+    const AudioChannelSet& mainOutputChannelSet = layouts.getMainOutputChannelSet();
 
     // only support mono in and out
-    if (mainInputChannelSet != juce::AudioChannelSet::mono())
+    if (mainInputChannelSet != AudioChannelSet::mono())
         return false;
     
     // either way, all buses must have same layout
@@ -181,44 +181,54 @@ bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
 
 
 
-void MimicAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-    auto bufferSize = buffer.getNumSamples();
-
-    juce::AudioPlayHead::CurrentPositionInfo playHeadPositionInfo{};
+    ScopedNoDenormals noDenormals;
+    const auto totalNumInputChannels  = getTotalNumInputChannels();
+    const auto totalNumOutputChannels = getTotalNumOutputChannels();
+    const auto bufferSize = buffer.getNumSamples();
 
     static int blockCounter = -1;
     blockCounter = (blockCounter + 1) % 100;
     bool timedDebug = blockCounter == 0;
 
-    bool tempoSync = static_cast<bool>(*tempoSyncParam);
+    const bool tempoSync = static_cast<bool>(*tempoSyncParam);
     float mix = *mixParam;
     double sampleRate = getSampleRate();
 
     double bpm = *bpmRawParam;
 
+
     if (tempoSync) {
-        juce::AudioPlayHead* playHead = getPlayHead();
+
+        std::optional<double> bpmFromPlayhead = std::nullopt;
+
+        AudioPlayHead* playHead = getPlayHead();
         if (playHead != nullptr) {
-            playHead->getCurrentPosition(playHeadPositionInfo);
-            // set the bpm parameter directly to communicate with the editor
-            bpm = playHeadPositionInfo.bpm;
+            if (auto optPlayheadPosition = playHead->getPosition(); optPlayheadPosition.hasValue())
+            {
+                if (auto optPlayheadBpm = optPlayheadPosition->getBpm(); optPlayheadBpm.hasValue())
+                {
+                    // set the bpm parameter directly to communicate with the editor
+                    bpmFromPlayhead = *optPlayheadBpm;
+                }
+            }
         }
-        else {
+
+        if (bpmFromPlayhead.has_value())
+        {
+            bpm = *bpmFromPlayhead;
+        }
+        else
+        {
             bpm = 120.0f; // default if trying to sync in a host that doesn't support it
         }
+
+        bpmAudioParam->setValueNotifyingHost(static_cast<float>(bpm / MAX_TEMPO));
+
     }
-    if (tempoSync) {
-       bpmAudioParam->setValueNotifyingHost((float)(bpm/MAX_TEMPO));
-    }
 
-
-
-    float beatDivider = *divisionParam;
-
+    const float beatDivider = *divisionParam;
 
     // calculate delay size from the tempo and set all the delay lines
     long samplesPerSubdivision = mimicry_util::getSamplesPerSubdivision(bpm, sampleRate, 1.0f/beatDivider);
@@ -286,7 +296,7 @@ bool MimicAudioProcessor::hasEditor() const
     return true;
 }
 
-juce::AudioProcessorEditor* MimicAudioProcessor::createEditor()
+AudioProcessorEditor* MimicAudioProcessor::createEditor()
 {
     return new MimicAudioProcessorEditor (*this, parameters);
 }
@@ -304,7 +314,7 @@ std::unique_ptr<XmlElement> MimicAudioProcessor::getStateXML() {
 }
 
 //==============================================================================
-void MimicAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void MimicAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // host calls this to get the state
     std::unique_ptr<XmlElement> stateXml = getStateXML();
