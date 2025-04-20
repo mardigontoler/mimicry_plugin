@@ -33,7 +33,7 @@ public:
     T getNextDelayedSample(const size_t i)
     {
         if(currentDelays[i] == 0){
-            return delayLineData[negativeAwareModulo(writeHead - 1, delayLineData.size())] * gains[i];
+            return delayLineData[juce::negativeAwareModulo(writeHead - 1, delayLineData.size())] * gains[i];
         }
         smoothedReadHeads[i] += deltaSmoothReads[i];
         while (smoothedReadHeads[i] >= size) {

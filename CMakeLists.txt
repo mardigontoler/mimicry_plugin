@@ -93,6 +93,10 @@ juce_add_plugin(
     BUNDLE_ID "com.mardigontoler.mimicry"
     FORMATS Standalone VST3 AU
     PLUGIN_CODE "mQwp"
+
+    # these seem to be needed to build on linux for now
+    NEEDS_WEB_BROWSER TRUE
+    NEEDS_CURL TRUE
 )
 
 
