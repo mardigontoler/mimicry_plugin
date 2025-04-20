@@ -175,7 +175,7 @@ bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
         return false;
     
     // either way, all buses must have same layout
-    else return !(mainInputChannelSet != mainOutputChannelSet);
+    return mainInputChannelSet == mainOutputChannelSet;
 }
 
 
@@ -190,11 +190,11 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
 
     static int blockCounter = -1;
     blockCounter = (blockCounter + 1) % 100;
-    bool timedDebug = blockCounter == 0;
+    const bool timedDebug = blockCounter == 0;
 
     const bool tempoSync = static_cast<bool>(*tempoSyncParam);
-    float mix = *mixParam;
-    double sampleRate = getSampleRate();
+    const float mix = *mixParam;
+    const double sampleRate = getSampleRate();
 
     double bpm = *bpmRawParam;
 
@@ -231,7 +231,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     const float beatDivider = *divisionParam;
 
     // calculate delay size from the tempo and set all the delay lines
-    long samplesPerSubdivision = mimicry_util::getSamplesPerSubdivision(bpm, sampleRate, 1.0f/beatDivider);
+    const long samplesPerSubdivision = mimicry_util::getSamplesPerSubdivision(bpm, sampleRate, 1.0f/beatDivider);
 
     //if (timedDebug)DBG("tempo sync " << (tempoSync ? "true" : "false"));
     if (timedDebug)
@@ -242,12 +242,12 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     // update the delay lines with parameter values
     for (size_t i = 0; i < multiDelayLines.getNumHeads(); i++) {
         //
-        multiDelayLines.setNumDelaySamples(i, i * samplesPerSubdivision, sampleRate);
-        float gain = *(delayGainParams[i]);
+        multiDelayLines.setNumDelaySamples(i, i * samplesPerSubdivision, static_cast<size_t>(sampleRate));
+        const float gain = *(delayGainParams[i]);
         multiDelayLines.setGain(i, gain);
 
-        int semitones = *(semitoneParams[i]);
-        pitchShifters[i].setPitchShiftSemitones(semitones);
+        const int semitones = static_cast<int>(*semitoneParams[i]);
+        pitchShifters[i].setPitchShiftSemitones(static_cast<float>(semitones));
     }
 
 
@@ -269,10 +269,10 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
 
                 }
                 // now get the next sample from each pitch shifter and add to sum
-                for(int shifterIndex = 0; shifterIndex < pitchShifters.size(); shifterIndex++){
-                    summedDelayLinesSample += pitchShifters[shifterIndex].nextSample();
+                for(auto & pitchShifter : pitchShifters){
+                    summedDelayLinesSample += pitchShifter.nextSample();
                 }
-                float mixedSample = ((1 - mix) * inputSample) + (mix * summedDelayLinesSample);
+                const float mixedSample = ((1 - mix) * inputSample) + (mix * summedDelayLinesSample);
                 buffer.setSample(channel, i, mixedSample);
             }
         }
