@@ -21,8 +21,6 @@ endif()
 
 # Set up the parent CMake project for the server binaries
 project(mimicry VERSION 0.1)
-message("-- MRWY_VERSION_STRING = ${MRWY_VERSION_STRING}")
-
 
 set(SRC ../src)
 set(LIB ../lib)
