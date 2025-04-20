@@ -255,14 +255,13 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     for (auto channel = 0; channel < totalNumInputChannels; channel++) {
         if (channel == 0) { // limit to mono
             for (auto i = 0; i < bufferSize; i++) {
-                float inputSample = buffer.getSample(channel, i);
+                const float inputSample = buffer.getSample(channel, i);
                 multiDelayLines.pushNextSample(inputSample);
                 float summedDelayLinesSample = 0;
                 for (int headIndex = 0; headIndex < multiDelayLines.getNumHeads(); headIndex++){
 
-
                     // route delay head into the associated pitch shifter
-                    int pitchShifterIndex = headIndex;
+                    const int pitchShifterIndex = headIndex;
                     pitchShifters[pitchShifterIndex].pushSample(multiDelayLines.getNextDelayedSample(headIndex));
                     //summedDelayLinesSample += multiDelayLines.getNextDelayedSample(headIndex);
 

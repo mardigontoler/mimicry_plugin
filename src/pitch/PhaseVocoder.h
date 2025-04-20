@@ -17,7 +17,7 @@ public:
 
     float nextSample();
 
-    int getDelay() const;
+    [[nodiscard]] int getDelay() const;
 
     void setPitchShiftSemitones(float numSemitones);
 
