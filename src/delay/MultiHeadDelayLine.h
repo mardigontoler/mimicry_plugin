@@ -24,7 +24,7 @@ public:
     ~MultiHeadDelayLine() = default;
 
 
-    void resize(size_t _size) {
+    void resize(const size_t _size) {
         size = _size;
         delayLineData.resize(size);
     }
