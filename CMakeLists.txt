@@ -25,9 +25,9 @@ project(mimicry VERSION 0.1)
 set(SRC ../src)
 set(LIB ../lib)
 
-# Present some cached options for customizing local MrWy builds.
+# Present some cached options for customizing builds.
 # These can be set in the cmake cache without worrying about accidentally committing them.
-# example : MRWY_EXAMPLE_OPTION will cause a variable with that name to appear in the variable list after configuration.
+# example : EXAMPLE_OPTION will cause a variable with that same name to appear in the variable list after configuration.
 # Enabling it will create a preprocessor define with the same name
 foreach(compOption
     # Add options here
