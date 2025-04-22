@@ -9,21 +9,6 @@ using namespace juce;
 using namespace mimicry;
 
 
-class DigitalLookAndFeel : public MimicryLookAndFeel
-{
-    Font getLabelFont(juce::Label& label) override
-    {
-        return getSegmentFont(50);
-    }
-public:
-    DigitalLookAndFeel(){
-        setColour(Label::textColourId, Colour::fromRGBA(45, 255, 180, 150));
-        setColour(Label::backgroundColourId, Colours::black);
-    }
-} digitalLookAndFeel;
-
-
-
 //==============================================================================
 MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
@@ -55,9 +40,8 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
 
 
 
-    tempoDisplay.setLookAndFeel(&digitalLookAndFeel);
+    tempoDisplay.setLookAndFeel(&digitalLAF);
     addAndMakeVisible(tempoDisplay);
-
 
     mixKnob.setSliderStyle(Slider::SliderStyle::Rotary);
     mixKnob.setTextBoxStyle(Slider::NoTextBox, true, 0,0);

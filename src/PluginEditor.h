@@ -9,6 +9,7 @@
 #include "gui/DelayHeadController.h"
 #include "gui/WhiteLabelLookAndFeel.h"
 #include "gui/DelayControllerLookAndFeel.h"
+#include "gui/DigitalLookAndFeel.h"
 
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
@@ -49,6 +50,7 @@ private:
 
     // child components
     //=======================
+	mimicry::DigitalLookAndFeel digitalLAF;
     TempoDisplay tempoDisplay;
 
     juce::Slider mixKnob;
