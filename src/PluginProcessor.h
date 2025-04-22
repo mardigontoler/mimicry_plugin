@@ -15,7 +15,7 @@ namespace mimicry {
 //==============================================================================
 /**
 */
-class MimicAudioProcessor  : public juce::AudioProcessor
+class MimicAudioProcessor final : public juce::AudioProcessor
 {
 public:
     //==============================================================================
@@ -56,10 +56,6 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     std::unique_ptr<juce::XmlElement> getStateXML();
-
-
-
-
 
 
 private:
