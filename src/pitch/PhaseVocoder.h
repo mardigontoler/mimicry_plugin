@@ -24,43 +24,42 @@ public:
 
     float nextSample();
 
-    [[nodiscard]] int getDelay() const;
+	[[maybe_unused]] [[maybe_unused]] [[nodiscard]] size_t getDelay() const;
 
     void setPitchShiftSemitones(float numSemitones);
 
 
     // The decoupled analysis step
-    class Analyzer
-    {
-    public:
-        Analyzer();
-
-        void pushSample(float sample) noexcept;
-        float nextSample();
-
-    private:
-        std::array<float, PV::FFT_SIZE> fifo{};
-
-        int analysisHopSize = PV::FFT_SIZE / PV::analysisOverlapFactor;
-        float factor = 1.0f;
-        std::array<float, PV::FFT_SIZE> tmp{}; // misc temporary real data
-
-        int fifoIndex = 0;
-        int fifosWritten = 0;
-        int fifoRead = 0;
-        int lastLeftIndex = 0;
-        double outputIndex = 0;
-    };
+//    class Analyzer
+//    {
+//    public:
+//        Analyzer();
+//
+//        void pushSample(float sample) noexcept;
+//        float nextSample();
+//
+//    private:
+//        std::array<float, PV::FFT_SIZE> fifo{};
+//
+//        int analysisHopSize = PV::FFT_SIZE / PV::analysisOverlapFactor;
+//        float factor = 1.0f;
+//        std::array<float, PV::FFT_SIZE> tmp{}; // misc temporary real data
+//
+//        int fifoIndex = 0;
+//        int fifosWritten = 0;
+//        int fifoRead = 0;
+//        int lastLeftIndex = 0;
+//        double outputIndex = 0;
+//    };
 
 protected:
 
-    int analysisHopSize = PV::FFT_SIZE / PV::analysisOverlapFactor;
+    size_t analysisHopSize = PV::FFT_SIZE / PV::analysisOverlapFactor;
     float factor = 1.0f;
     int synthesisHopSize = static_cast<int>(factor * static_cast<float>(analysisHopSize));
 
     static constexpr float maxFactor = 2.0f;
-    static constexpr float minFactor = 0.5f;
-
+//    static constexpr float minFactor = 0.5f;
 
     juce::dsp::FFT forwardFFT;
     juce::dsp::FFT inverseFFT;
@@ -80,10 +79,10 @@ protected:
 
     bool outputReady = false;
 
-    int fifoIndex = 0;
-    int fifosWritten = 0;
-    int fifoRead = 0;
-    int lastLeftIndex = 0;
+    size_t fifoIndex = 0;
+    size_t fifosWritten = 0;
+    size_t fifoRead = 0;
+    size_t lastLeftIndex = 0;
     double outputIndex = 0;
 
     void phaseCorrect();

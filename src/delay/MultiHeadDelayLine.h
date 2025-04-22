@@ -8,7 +8,7 @@ class MultiHeadDelayLine {
 
 public:
 
-    explicit MultiHeadDelayLine(const int numDelays)
+    explicit MultiHeadDelayLine(const size_t numDelays)
             :
             gains(numDelays, 0),
             targetReadHeads(numDelays, 0),
