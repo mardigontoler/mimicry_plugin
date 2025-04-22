@@ -30,31 +30,31 @@ public:
     }
 
 
-    T getNextDelayedSample(const size_t i)
+    T getNextDelayedSample(const size_t headIndex)
     {
-        if(currentDelays[i] == 0){
-            return delayLineData[juce::negativeAwareModulo(writeHead - 1, delayLineData.size())] * gains[i];
+        if(currentDelays[headIndex] == 0){
+            return delayLineData[juce::negativeAwareModulo(writeHead - 1, delayLineData.size())] * gains[headIndex];
         }
-        smoothedReadHeads[i] += deltaSmoothReads[i];
-        while (smoothedReadHeads[i] >= size) {
-            smoothedReadHeads[i] -= size;
+        smoothedReadHeads[headIndex] += deltaSmoothReads[headIndex];
+        while (smoothedReadHeads[headIndex] >= size) {
+            smoothedReadHeads[headIndex] -= size;
         }
-        while (smoothedReadHeads[i] < 0) {
-            smoothedReadHeads[i] += size;
+        while (smoothedReadHeads[headIndex] < 0) {
+            smoothedReadHeads[headIndex] += size;
         }
-        targetReadHeads[i] = (targetReadHeads[i] + 1) % size;
+        targetReadHeads[headIndex] = (targetReadHeads[headIndex] + 1) % size;
 
-        if (deltaSmoothReads[i] != 1.0f) {
-            remainingStepsAtAlteredRate[i] -= 1;
-            if (remainingStepsAtAlteredRate[i] <= 1)
+        if (deltaSmoothReads[headIndex] != 1.0f) {
+            remainingStepsAtAlteredRate[headIndex] -= 1;
+            if (remainingStepsAtAlteredRate[headIndex] <= 1)
             {
-                deltaSmoothReads[i] = 1.0f;
-                smoothedReadHeads[i] = targetReadHeads[i];
+                deltaSmoothReads[headIndex] = 1.0f;
+                smoothedReadHeads[headIndex] = targetReadHeads[headIndex];
             }
         }
 
 
-        return delayLineData[smoothedReadHeads[i]] * gains[i];
+        return delayLineData[smoothedReadHeads[headIndex]] * gains[headIndex];
     }
 
 
@@ -70,7 +70,6 @@ public:
     // set the delay size (in samples) for read head i
     void setNumDelaySamples(const size_t i, const size_t numSamples, const size_t sampleRate)
     {
-
         const float delaySizeChange = currentDelays[i] - numSamples;
         currentDelays[i] = numSamples;
 
@@ -80,7 +79,9 @@ public:
 
         }
 
-        if (initialDelaysSet[i] && delaySizeChange != 0)
+		auto tol = juce::Tolerance<float>{};
+
+        if (initialDelaysSet[i] && juce::approximatelyEqual(delaySizeChange, 0.0f))
         { // only set a delta if the delay had already been set before
 
             // set the delta for this head so that it will be at the target within .5 seconds
@@ -111,7 +112,7 @@ public:
         std::fill(delayLineData.begin(), delayLineData.end(), 0);
     }
 
-    [[nodiscard]] int getNumHeads() const {return targetReadHeads.size();}
+    [[nodiscard]] size_t getNumHeads() const {return targetReadHeads.size();}
 
     void setGain(const size_t i, const float gain){
         gains[i] = gain;

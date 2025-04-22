@@ -71,6 +71,8 @@ set(JUCE_PATH "" CACHE PATH "Path to JUCE")
 
 set(JUCE_COPY_PLUGIN_AFTER_BUILD ON)
 set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
+
+message("JUCE_PATH=${JUCE_PATH}")
 add_subdirectory(${JUCE_PATH} build_juce)
 
 
