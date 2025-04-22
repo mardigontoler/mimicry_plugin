@@ -21,15 +21,13 @@ endif()
 
 # Set up the parent CMake project for the server binaries
 project(mimicry VERSION 0.1)
-message("-- MRWY_VERSION_STRING = ${MRWY_VERSION_STRING}")
-
 
 set(SRC ../src)
 set(LIB ../lib)
 
-# Present some cached options for customizing local MrWy builds.
+# Present some cached options for customizing builds.
 # These can be set in the cmake cache without worrying about accidentally committing them.
-# example : MRWY_EXAMPLE_OPTION will cause a variable with that name to appear in the variable list after configuration.
+# example : EXAMPLE_OPTION will cause a variable with that same name to appear in the variable list after configuration.
 # Enabling it will create a preprocessor define with the same name
 foreach(compOption
     # Add options here
@@ -93,6 +91,10 @@ juce_add_plugin(
     BUNDLE_ID "com.mardigontoler.mimicry"
     FORMATS Standalone VST3 AU
     PLUGIN_CODE "mQwp"
+
+    # these seem to be needed to build on linux for now
+    NEEDS_WEB_BROWSER TRUE
+    NEEDS_CURL TRUE
 )
 
 
