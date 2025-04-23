@@ -57,11 +57,15 @@ protected:
 		std::array<float, PV::FFT_SIZE> oldInputPhases{};
 		std::array<float, PV::FFT_SIZE> oldOutputPhases{};
 		std::array<float, (4 * PV::FFT_SIZE * static_cast<int>(maxFactor))> outputData{};
+
+		double outputIndex = 0;
+		size_t lastLeftIndex = 0;
+
 	};
 
 	std::vector<OutputSection> mOutputSections;
 
-    // These stays constant for a particular value of N. Represents how much to propgate the phase of each frequency bin
+    // These stays constant for a particular FFT_SIZE. Represents how much to propgate the phase of each frequency bin
     std::array<float, PV::FFT_SIZE> omegas{};
 
     bool outputReady = false;
@@ -69,8 +73,6 @@ protected:
     size_t fifoIndex = 0;
     size_t fifosWritten = 0;
     size_t fifoRead = 0;
-    size_t lastLeftIndex = 0;
-    double outputIndex = 0;
 
 	size_t mNumVocoders = 1;
 

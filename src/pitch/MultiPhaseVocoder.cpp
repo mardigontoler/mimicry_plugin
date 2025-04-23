@@ -82,14 +82,14 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 				for (size_t i = 0; i < PV::FFT_SIZE; i++) {
 					// scale amplitude down by number of overlapping windows, and write to output buffer, directly where
 					// it's being read from
-					section.outputData[(static_cast<size_t>(floor(outputIndex)) + i) % section.outputData.size()] +=
+					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % section.outputData.size()] +=
 							section.inverseFftRealOutput[i] / static_cast<float>(PV::analysisOverlapFactor);
 				}
 			}
 			else { // factor is 1, so don't pitch shift
 				// pass the new fifo samples straight to the output buffer
 				for (size_t i = 0; i < analysisHopSize; i++) {
-					section.outputData[(static_cast<size_t>(floor(outputIndex)) + i) % section.outputData.size() ] = fifo[(fifoRead + i) % PV::FFT_SIZE];
+					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % section.outputData.size() ] = fifo[(fifoRead + i) % PV::FFT_SIZE];
 				}
 			}
 
@@ -121,25 +121,25 @@ float MultiPhaseVocoder::nextSample(size_t vocoderIx)
 
 	// move the output read head by the ratio
 	// Return linearly interpolated values.
-	const size_t leftIndex = floor(outputIndex);
+	const size_t leftIndex = floor(section.outputIndex);
 	const double sample1 = section.outputData[leftIndex];
-	const auto frac = outputIndex - static_cast<double>(leftIndex);
-	outputIndex += section.factor;
-	while(static_cast<size_t>(outputIndex) >= section.outputData.size())
+	const auto frac = section.outputIndex - static_cast<double>(leftIndex);
+	section.outputIndex += section.factor;
+	while(static_cast<size_t>(section.outputIndex) >= section.outputData.size())
 	{
-		outputIndex -= static_cast<double>(section.outputData.size());
+		section.outputIndex -= static_cast<double>(section.outputData.size());
 	}
 	const size_t rightIndex = (leftIndex + 1) % section.outputData.size();
 	const double sample2 = section.outputData[rightIndex];
 
 	// erase an output buffer sample once the smoothed output read head moves past it completely
-	size_t clearIndex = lastLeftIndex;
+	size_t clearIndex = section.lastLeftIndex;
 	while(clearIndex != leftIndex)
 	{
 		section.outputData[clearIndex] = 0;
 		clearIndex = (clearIndex + 1) % section.outputData.size();
 	}
-	lastLeftIndex = leftIndex;
+	section.lastLeftIndex = leftIndex;
 
 	return static_cast<float>(sample1 + frac * (sample2 - sample1));
 }
