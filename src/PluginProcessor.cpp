@@ -14,9 +14,14 @@ MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
         //.withOutput ("Output Wet", AudioChannelSet::stereo(), true)
     ),
     parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
-    multiDelayLines(numStereoDelayLines)
-
+//    multiDelayLines(numStereoDelayLines),
+	pitchShifters(numStereoDelayLines)
 {
+	for (size_t delayIx = 0; delayIx < numStereoDelayLines; delayIx++)
+	{
+		mDelayLines.emplace_back();
+	}
+
     // set pointers to raw parameter values
     tempoSyncParam = parameters.getRawParameterValue("tempoSync");
     bpmAudioParam = parameters.getParameter("bpm");
@@ -147,15 +152,17 @@ void MimicAudioProcessor::changeProgramName (int index, const String& newName)
 //==============================================================================
 void MimicAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    const auto maxDelayLength = static_cast<size_t>( 5.0 * sampleRate ); // TODO update this
+    mMaxDelayLengthInSamples = static_cast<size_t>( 10 * sampleRate );
 
-    multiDelayLines.resize(maxDelayLength);
-    for (size_t i = 0; i < multiDelayLines.getNumHeads(); i++) {
-        multiDelayLines.clear();
-    }
+	for (auto& delay : mDelayLines)
+	{
+		delay.reset();
+		juce::dsp::ProcessSpec spec{sampleRate, static_cast<uint32>(samplesPerBlock), 1};
+		delay.prepare(spec);
+		delay.setMaximumDelayInSamples(static_cast<int>(mMaxDelayLengthInSamples));
+	}
 
     //stereoDelayLines[3].setEnabled(true);
-
 }
 
 void MimicAudioProcessor::releaseResources()
@@ -230,7 +237,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     const float beatDivider = *divisionParam;
 
     // calculate delay size from the tempo and set all the delay lines
-    const long samplesPerSubdivision = mimicry_util::getSamplesPerSubdivision(bpm, sampleRate, 1.0f/beatDivider);
+    const size_t samplesPerSubdivision = mimicry_util::getSamplesPerSubdivision(bpm, sampleRate, 1.0f/beatDivider);
 
     //if (timedDebug)DBG("tempo sync " << (tempoSync ? "true" : "false"));
     if (timedDebug)
@@ -239,37 +246,43 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     }
 
     // update the delay lines with parameter values
-    for (size_t i = 0; i < multiDelayLines.getNumHeads(); i++) {
-        //
-        multiDelayLines.setNumDelaySamples(i, i * samplesPerSubdivision, static_cast<size_t>(sampleRate));
-        const float gain = *(delayGainParams[i]);
-        multiDelayLines.setGain(i, gain);
+    for (size_t ix = 0; ix < mDelayLines.size(); ix++) {
+        auto& delay = mDelayLines[ix];
 
-        const int semitones = static_cast<int>(*semitoneParams[i]);
-        pitchShifters[i].setPitchShiftSemitones(static_cast<float>(semitones));
+		size_t delaySamples =  ix * samplesPerSubdivision;
+		delaySamples = std::clamp<size_t>(delaySamples, 0, mMaxDelayLengthInSamples);
+
+		delay.setDelay(static_cast<float>(delaySamples));
+
+        const int semitones = static_cast<int>(*semitoneParams[ix]);
+		pitchShifters.setPitchShiftSemitones(ix, static_cast<float>(semitones));
     }
 
 
-    // get the next block of delayed samples from the delay lines.
-    // set the right and left channels from the right and left delay lines
     for (auto channel = 0; channel < totalNumInputChannels; channel++) {
         if (channel == 0) { // limit to mono
             for (auto i = 0; i < bufferSize; i++) {
                 const float inputSample = buffer.getSample(channel, i);
-                multiDelayLines.pushNextSample(inputSample);
+				pitchShifters.pushSample(inputSample);
+
                 float summedDelayLinesSample = 0;
-                for (int headIndex = 0; headIndex < multiDelayLines.getNumHeads(); headIndex++){
+                for (size_t headIndex = 0; headIndex < mDelayLines.size(); headIndex++)
+				{
+					// feed each pitch shifter output into the corresponding delay line
+					auto& delay = mDelayLines[headIndex];
 
-                    // route delay head into the associated pitch shifter
-                    const int pitchShifterIndex = headIndex;
-                    pitchShifters[pitchShifterIndex].pushSample(multiDelayLines.getNextDelayedSample(headIndex));
-                    //summedDelayLinesSample += multiDelayLines.getNextDelayedSample(headIndex);
+					auto nextPitchShifterSample = pitchShifters.nextSample(headIndex);
 
+					constexpr int delayChannel = 0; // mono
+					delay.pushSample(delayChannel, nextPitchShifterSample);
+
+					auto delayedSample = delay.popSample(delayChannel);
+					const float gain = *(delayGainParams[headIndex]);
+					delayedSample *= gain;
+
+					summedDelayLinesSample += delayedSample;
                 }
-                // now get the next sample from each pitch shifter and add to sum
-                for(auto & pitchShifter : pitchShifters){
-                    summedDelayLinesSample += pitchShifter.nextSample();
-                }
+
                 const float mixedSample = ((1 - mix) * inputSample) + (mix * summedDelayLinesSample);
                 buffer.setSample(channel, i, mixedSample);
             }

@@ -3,7 +3,7 @@
 
 #include "delay/MultiHeadDelayLine.h"
 #include "juce_audio_processors/juce_audio_processors.h"
-#include "pitch/PhaseVocoder.h"
+#include "pitch/MultiPhaseVocoder.h"
 
 namespace mimicry {
     // constants
@@ -64,9 +64,11 @@ private:
     
     juce::AudioProcessorValueTreeState parameters;
     
-    MultiHeadDelayLine<float>   multiDelayLines;
+//    MultiHeadDelayLine<float>   multiDelayLines;
+	std::vector<juce::dsp::DelayLine<float>> mDelayLines;
+	size_t mMaxDelayLengthInSamples;
 
-    std::array<PhaseVocoder, mimicry::numStereoDelayLines> pitchShifters;
+    MultiPhaseVocoder pitchShifters;
 
     // audio parameter value pointers
     std::atomic<float>* bpmRawParam = nullptr; // tempo
