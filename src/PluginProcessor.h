@@ -66,7 +66,7 @@ private:
     
 //    MultiHeadDelayLine<float>   multiDelayLines;
 	std::vector<juce::dsp::DelayLine<float>> mDelayLines;
-	size_t mMaxDelayLengthInSamples;
+	size_t mMaxDelayLengthInSamples{};
 
     MultiPhaseVocoder pitchShifters;
 
