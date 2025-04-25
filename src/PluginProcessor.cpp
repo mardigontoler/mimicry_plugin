@@ -72,7 +72,7 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
             "Division",
             1,
             16,
-            2)
+            8)
     );
 
 

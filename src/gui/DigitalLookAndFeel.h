@@ -15,7 +15,7 @@ namespace mimicry
 	public:
 		DigitalLookAndFeel()
 		{
-			setColour(juce::Label::textColourId, juce::Colour::fromRGBA(45, 255, 180, 150));
+			setColour(juce::Label::textColourId, juce::Colour::fromRGBA(255, 10, 10, 255));
 			setColour(juce::Label::backgroundColourId, juce::Colours::black);
 		}
 	};
