@@ -263,7 +263,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
 
 		delay.setDelay(static_cast<float>(delaySamples));
 
-        const int semitones = static_cast<int>(*semitoneParams[ix]);
+        const auto semitones = static_cast<int>(*semitoneParams[ix]);
 		pitchShifters.setPitchShiftSemitones(ix, static_cast<float>(semitones));
     }
 
@@ -280,7 +280,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
 					// feed each pitch shifter output into the corresponding delay line
 					auto& delay = mDelayLines[headIndex];
 
-					auto nextPitchShifterSample = pitchShifters.nextSample(headIndex);
+					const auto nextPitchShifterSample = pitchShifters.nextSample(headIndex);
 
 					constexpr int delayChannel = 0; // mono
 					delay.pushSample(delayChannel, nextPitchShifterSample);
