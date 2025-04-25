@@ -144,16 +144,16 @@ int MimicAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void MimicAudioProcessor::setCurrentProgram (int index)
+void MimicAudioProcessor::setCurrentProgram (int /*index*/)
 {
 }
 
-const String MimicAudioProcessor::getProgramName (int index)
+const String MimicAudioProcessor::getProgramName (int /*index*/)
 {
     return {};
 }
 
-void MimicAudioProcessor::changeProgramName (int index, const String& newName)
+void MimicAudioProcessor::changeProgramName (int /*index*/, const String& /*newName*/)
 {
 }
 
@@ -196,7 +196,7 @@ bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
 
 
 
-void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& /*midiMessages*/)
 {
     ScopedNoDenormals noDenormals;
     const auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -253,7 +253,8 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
         //getStateXML();
     }
 
-    // update the delay lines with parameter values
+	jassert(nextDelayLineSamples.size() == mDelayLines.size());
+
     for (size_t ix = 0; ix < mDelayLines.size(); ix++) {
         auto& delay = mDelayLines[ix];
 

@@ -81,7 +81,10 @@ private:
     std::vector<std::atomic<float>*> semitoneParams; // value tree will give us float even for int parameters
 	std::vector<std::atomic<float>*> feedbackParams;
 
-    juce::RangedAudioParameter* bpmAudioParam; // so we can set this param internally
+	std::array<float, mimicry::numStereoDelayLines> nextDelayLineSamples;
+
+
+	juce::RangedAudioParameter* bpmAudioParam; // so we can set this param internally
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MimicAudioProcessor)
