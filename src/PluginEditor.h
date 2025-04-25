@@ -76,7 +76,7 @@ private:
     juce::Rectangle<int> delayHeadsBottomArea;
 
     juce::Label titleLabel;
-    juce::Label subTitleLabel;
+//    juce::Label subTitleLabel;
     juce::Label tempoLabel;
     juce::Label divLabel;
     juce::Label mixLabel;

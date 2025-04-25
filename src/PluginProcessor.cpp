@@ -14,7 +14,6 @@ MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
         //.withOutput ("Output Wet", AudioChannelSet::stereo(), true)
     ),
     parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
-//    multiDelayLines(numStereoDelayLines),
 	pitchShifters(numStereoDelayLines)
 {
 	for (size_t delayIx = 0; delayIx < numStereoDelayLines; delayIx++)
@@ -32,6 +31,7 @@ MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
     for (int i = 0; i < numStereoDelayLines; i++) {
         delayGainParams.push_back(parameters.getRawParameterValue(String("rhythmGain") + String(i)));
         semitoneParams.push_back(parameters.getRawParameterValue(String("pitchShift") + String(i)));
+		feedbackParams.push_back(parameters.getRawParameterValue(String("feedback") + String(i)));
     }
 }
 
@@ -94,6 +94,14 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
             24,
             0
             ));
+
+		params.push_back(std::make_unique<AudioParameterFloat>(
+				String("feedback") + String(i),
+				String("Feedback ") + String(i),
+				0.0f,
+				1.0f,
+				0.0f
+		));
     }
 
     return { params.begin(), params.end() };

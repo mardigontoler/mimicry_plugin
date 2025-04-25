@@ -19,11 +19,11 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
     titleLabel.setLookAndFeel(&titleLookAndFeel);
     titleLabel.setJustificationType(Justification::centred);
     addAndMakeVisible(titleLabel);
-
-    subTitleLabel.setText("Delay and Arpeggio", NotificationType::dontSendNotification);
-    subTitleLabel.setJustificationType(Justification::centred);
-    subTitleLabel.setLookAndFeel(&subTitleLookAndFeel);
-    addAndMakeVisible(subTitleLabel);
+//
+//    subTitleLabel.setText("Delay and Arpeggio", NotificationType::dontSendNotification);
+//    subTitleLabel.setJustificationType(Justification::centred);
+//    subTitleLabel.setLookAndFeel(&subTitleLookAndFeel);
+//    addAndMakeVisible(subTitleLabel);
 
 
     tempoLabel.setText("Tempo", NotificationType::dontSendNotification);
@@ -72,15 +72,15 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
         delayHeadControllers.add(new DelayHeadController());
         String delayGainParamString = String("rhythmGain") + String(i);
         String semitoneParamString = String("pitchShift") + String(i);
+		String feedbackParamString = String("feedback") + String(i);
 
         DelayHeadController* controller = delayHeadControllers.getLast();
         controller->resetDelayGainAttachment(valueTreeState, delayGainParamString);
         controller->resetSemitoneAttachment(valueTreeState, semitoneParamString);
+		controller->resetFeedbackAttachment(valueTreeState, feedbackParamString);
         controller->setLookAndFeel(&delayControllerLookAndFeel);
         addAndMakeVisible(controller);
     }
-
-
 
 
     // connect components to processor
@@ -130,9 +130,9 @@ void MimicAudioProcessorEditor::resized()
     titleLabelArea.translate(-3, 10);
     titleLabel.setBounds(titleLabelArea);
 
-    Rectangle<int> subTitleArea = headerArea; // copy
-    subTitleArea.translate(0, 10);
-    subTitleLabel.setBounds(subTitleArea);
+//    Rectangle<int> subTitleArea = headerArea; // copy
+//    subTitleArea.translate(0, 10);
+//    subTitleLabel.setBounds(subTitleArea);
 
     // place components in sidebar
     constexpr int labelAreaAmount = 20;
@@ -164,13 +164,14 @@ void MimicAudioProcessorEditor::resized()
 
 
     // place delay line components on right side in two rows
+	auto margin = 2;
     constexpr int delayHeadsPerRow = numStereoDelayLines / 2;
     const int delayHeadControllerSpacing = delayHeadsTopArea.getWidth() / delayHeadsPerRow;
     for(int i = 0; i < numStereoDelayLines; i++){
         if(i < delayHeadsPerRow)
-            delayHeadControllers[i]->setBounds(delayHeadsTopArea.removeFromLeft(delayHeadControllerSpacing));
+            delayHeadControllers[i]->setBounds(delayHeadsTopArea.removeFromLeft(delayHeadControllerSpacing).reduced(margin));
         else
-            delayHeadControllers[i]->setBounds(delayHeadsBottomArea.removeFromLeft(delayHeadControllerSpacing));
+            delayHeadControllers[i]->setBounds(delayHeadsBottomArea.removeFromLeft(delayHeadControllerSpacing).reduced(margin));
     }
 
 }

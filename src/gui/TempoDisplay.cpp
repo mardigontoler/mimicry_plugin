@@ -13,7 +13,7 @@ TempoDisplay::TempoDisplay()
 	glowLabel.setMinimumHorizontalScale(1.0f);
 
 	addAndMakeVisible(tempoLabel);
-	addAndMakeVisible(glowLabel, 1);
+//	addAndMakeVisible(glowLabel, 1);
 }
 
 void TempoDisplay::paint(juce::Graphics&g)
@@ -38,12 +38,13 @@ void TempoDisplay::resized()
 
 	const Colour mainColour = tempoLabel.findColour(Label::textColourId, false);
 	Colour glowLabelColour = mainColour.withAlpha(0.4f);
-	glowLabel.setColour(Label::textColourId, glowLabelColour);
+//	glowLabel.setColour(Label::textColourId, glowLabelColour);
 
 	tempoLabel.setBounds(textBoxBounds);
-	glowLabel.setBounds(glowTextBoxBounds);
+//	glowLabel.setBounds(glowTextBoxBounds);
 
 }
+
 
 void TempoDisplay::sliderValueChanged(juce::Slider* slider)
 {

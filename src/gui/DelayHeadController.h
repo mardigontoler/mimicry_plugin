@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "juce_audio_processors/juce_audio_processors.h"
 
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
@@ -19,21 +21,13 @@ public:
 
     void resetDelayGainAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
 
-    void resetSemitoneAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param){
-        semitoneAttachment.reset(new SliderAttachment(valueTreeState, param, semitonesKnob));
-    }
+    void resetSemitoneAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
 
-    void resized() override {
-        juce::Rectangle<int> area = getLocalBounds();
+	void resetFeedbackAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
 
-        int height = area.getHeight();
+    void resized() override;
 
-        // delay slider on the top
-        delayGainSlider.setBounds(area.removeFromTop(height - semitonesKnobSpace).reduced(0, 3));
-
-        // semitones knob below it
-        semitonesKnob.setBounds(area);
-    }
+	void paint(juce::Graphics &g) override;
 
 
 private:
@@ -42,9 +36,11 @@ private:
     int semitonesTextboxHeight = 15;
     juce::Slider delayGainSlider;
     juce::Slider semitonesKnob;
+	juce::Slider feedbackKnob;
 
     std::unique_ptr<SliderAttachment> delayGainAttachment;
     std::unique_ptr<SliderAttachment> semitoneAttachment;
+	std::unique_ptr<SliderAttachment> feedbackAttachment;
 
 
 };
