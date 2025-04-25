@@ -76,5 +76,5 @@ protected:
 
 	size_t mNumVocoders = 1;
 
-    void phaseCorrect();
+    void phaseCorrect(OutputSection& section);
 };

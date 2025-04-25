@@ -64,11 +64,10 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 			section.freqFftData = freqDomainTmp;
 		}
 
-		// TODO take section as parameter
-		phaseCorrect(); // mutates freqFftData to
-
 		for (auto& section : mOutputSections)
 		{
+			phaseCorrect(section); // mutates freqFftData to
+
 			if(!juce::approximatelyEqual(section.factor, 1.0f)) { // pitch shift
 
 				const auto &sz = PV::FFT_SIZE;
@@ -107,9 +106,6 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 
 float MultiPhaseVocoder::nextSample(size_t vocoderIx)
 {
-    if ( ! outputReady) {
-		return 0;
-	}
 
 	if (vocoderIx >= mOutputSections.size())
 	{
@@ -146,32 +142,29 @@ float MultiPhaseVocoder::nextSample(size_t vocoderIx)
 
 
 
-void MultiPhaseVocoder::phaseCorrect() {
+void MultiPhaseVocoder::phaseCorrect(OutputSection& section)
+{
+	auto& oldInputPhases = section.oldInputPhases;
+	auto& oldOutputPhases = section.oldOutputPhases;
+	auto& freqFftData = section.freqFftData;
 
-	for (auto & section : mOutputSections)
-	{
-		auto& oldInputPhases = section.oldInputPhases;
-		auto& oldOutputPhases = section.oldOutputPhases;
-		auto& freqFftData = section.freqFftData;
+	for(size_t i = 0 ; i < PV::FFT_SIZE; i++) {
 
-		for(size_t i = 0 ; i < PV::FFT_SIZE; i++) {
+		const float inputPhase = std::arg(freqFftData[i]);
+		const float omega = omegas[i];
 
-			const float inputPhase = std::arg(freqFftData[i]);
-			const float omega = omegas[i];
+		float deltaInputPhase = inputPhase - oldInputPhases[i] - (static_cast<float>(analysisHopSize) * omega);
+		deltaInputPhase = deltaInputPhase - tau * std::round(deltaInputPhase / tau);
+		oldInputPhases[i] = inputPhase;
+		float instantaneousFrequency = omega + (deltaInputPhase / static_cast<float>(analysisHopSize));
 
-			float deltaInputPhase = inputPhase - oldInputPhases[i] - (static_cast<float>(analysisHopSize) * omega);
-			deltaInputPhase = deltaInputPhase - tau * std::round(deltaInputPhase / tau);
-			oldInputPhases[i] = inputPhase;
-			float instantaneousFrequency = omega + (deltaInputPhase / static_cast<float>(analysisHopSize));
+		float outputPhase = oldOutputPhases[i] +(static_cast<float>(section.synthesisHopSize) * instantaneousFrequency);
+		outputPhase -= tau * std::round(outputPhase / tau);
 
-			float outputPhase = oldOutputPhases[i] +(static_cast<float>(section.synthesisHopSize) * instantaneousFrequency);
-			outputPhase -= tau * std::round(outputPhase / tau);
+		oldOutputPhases[i] = outputPhase;
 
-			oldOutputPhases[i] = outputPhase;
-
-			// complex multiplication to rotate the fft values so that they match the target output phases
-			freqFftData[i] *= std::polar(1.0f, outputPhase - inputPhase);
-		}
+		// complex multiplication to rotate the fft values so that they match the target output phases
+		freqFftData[i] *= std::polar(1.0f, outputPhase - inputPhase);
 	}
 }
 
@@ -187,82 +180,6 @@ void MultiPhaseVocoder::setPitchShiftSemitones(size_t vocoderIx, const float num
     section.factor = static_cast<float>(pow(2,  numSemitones / 12.0f));
     section.synthesisHopSize = static_cast<int>(section.factor * static_cast<float>(analysisHopSize));
 }
-
-//PhaseVocoder::Analyzer::Analyzer()
-//{
-//}
-
-
-//void PhaseVocoder::Analyzer::pushSample(float sample) noexcept
-//{
-//	// add the new sample to the fifo.
-//    // once we have enough samples to do the first fft,
-//    // do it, grabbing samples from the fifo starting from a fifoStart index
-//    // that moves by the hop size every time the fft is taken. (it should wrap around)
-//
-//    // output is written to the output buffer
-//
-//    // we can bypass the actual processing when the factor is 1 (no pitch shift)
-//    // but we should still be adding samples so that the queue stays full
-//
-//    fifo[fifoIndex] = sample;
-//    fifoIndex = (fifoIndex + 1) % PV::FFT_SIZE;
-//    fifosWritten++;
-//    if (fifosWritten == PV::FFT_SIZE)
-//    {
-//        fifosWritten -= analysisHopSize;
-//
-//        if(!juce::approximatelyEqual(factor, 1.0f)) { // pitch shift
-//
-//            for(int i = 0; i < PV::FFT_SIZE; i++){
-//                tmp[i] = fifo[(fifoRead + i) % PV::FFT_SIZE];
-//            }
-//            window.multiplyWithWindowingTable(tmp.data(), PV::FFT_SIZE);
-//
-//            // copy fifo complex values
-//            for (int j = 0; j < PV::FFT_SIZE; j++) {
-//                timeFftData[j] = {tmp[j], 0};
-//            }
-//
-//            forwardFFT.perform(timeFftData.data(), freqFftData.data(), false);
-//
-//            phaseCorrect(); // mutates freqFftData to
-//
-//            inverseFFT.perform(freqFftData.data(), timeFftData.data(), true);
-//
-//
-//            for (int i = 0; i < PV::FFT_SIZE; i++) {
-//                float nextOutput = timeFftData[i].real();
-//                tmp[i] = nextOutput;
-//            }
-//
-//
-//            window.multiplyWithWindowingTable(tmp.data(), PV::FFT_SIZE);
-//
-//            for (int i = 0; i < PV::FFT_SIZE; i++) {
-//                // scale amplitude down by number of overlapping windows, and write to output buffer, directly where
-//                // it's being read from
-//                outputData[(static_cast<int>(floor(outputIndex)) + i) % outputData.size()] +=
-//                        tmp[i] / static_cast<float>(PV::analysisOverlapFactor);
-//            }
-//        }
-//        else { // factor is 1, so don't pitch shift
-//            // pass the new fifo samples straight to the output buffer
-//            for (int i = 0; i < analysisHopSize; i++) {
-//                outputData[(static_cast<int>(floor(outputIndex)) + i) % outputData.size() ] = fifo[(fifoRead + i) % PV::FFT_SIZE];
-//            }
-//        }
-//
-//        outputReady = true;
-//
-//        fifoRead = juce::negativeAwareModulo((fifoRead) + analysisHopSize , PV::FFT_SIZE);
-//
-//    }
-//}
-
-//float PhaseVocoder::Analyzer::nextSample()
-//{
-//}
 
 
 [[maybe_unused]] size_t MultiPhaseVocoder::getDelay() const {
