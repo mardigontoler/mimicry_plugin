@@ -13,11 +13,19 @@ if (APPLE)
     set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=RelWithDebInfo] "dwarf-with-dsym")
 endif()
 
+message(APPLE)
+if ( NOT APPLE)
+    message("Finding Intel MKL")
+    set(MKL_LINK "static")
+    find_package(MKL CONFIG REQUIRED MKL_LINK=static)
+    message(STATUS "${MKL_IMPORTED_TARGETS}") #Provides available list of targets based on input
+endif()
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     message(STATUS "Enabling parallel builds for MSVC")
     add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 endif()
+
 
 # Set up the parent CMake project for the server binaries
 project(mimicry VERSION 0.1)
@@ -132,4 +140,18 @@ target_link_libraries(mimicry
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
+)
+
+if ( NOT APPLE)
+    target_link_libraries(mimicry
+        PUBLIC
+            MKL::MKL
+    )
+endif()
+
+
+target_compile_definitions(mimicry
+    PRIVATE
+        CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+        JUCE_DSP_USE_INTEL_MKL=1
 )

@@ -81,7 +81,7 @@ private:
     std::vector<std::atomic<float>*> semitoneParams; // value tree will give us float even for int parameters
 	std::vector<std::atomic<float>*> feedbackParams;
 
-	std::array<float, mimicry::numStereoDelayLines> nextDelayLineSamples;
+	std::array<float, mimicry::numStereoDelayLines> nextDelayLineSamples{};
 
 
 	juce::RangedAudioParameter* bpmAudioParam; // so we can set this param internally
