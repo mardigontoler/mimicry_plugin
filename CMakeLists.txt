@@ -82,6 +82,7 @@ set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
 message("JUCE_PATH=${JUCE_PATH}")
 add_subdirectory(${JUCE_PATH} build_juce)
 
+add_subdirectory(highway build_highway)
 
 
 juce_add_binary_data(mimicry_binary_data
@@ -135,6 +136,7 @@ target_link_libraries(mimicry
         mimicry_binary_data
         juce::juce_audio_utils
         juce::juce_dsp
+        hwy
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
@@ -153,4 +155,14 @@ target_compile_definitions(mimicry
     PRIVATE
         CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
         JUCE_DSP_USE_INTEL_MKL=1
+)
+
+
+add_executable(benchmark_phase_correct
+    src/benchmark_phase_correct.cpp
+)
+target_link_libraries(benchmark_phase_correct
+    PRIVATE
+    hwy
+    mimicry
 )
