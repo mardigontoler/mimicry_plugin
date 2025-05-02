@@ -4,13 +4,40 @@ A pitch shifted multi-delay plugin
 
 # Dependencies
 
+General:
+- [highway](https://github.com/google/highway)
 - [JUCE (v 8.0.7)](https://github.com/juce-framework/JUCE)
 
+Windows/Linux:
 - [Intel OneMKL](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
 
-# Building
-Build using cmake (at least version 3.14). 
 
-From the command line, CMake GUI, etc., you will need to point the script at your dependencies
-with these variables:
- - JUCE_PATH
+
+# Building
+
+On Win/Linux, Intel OneMKL needs to be installed (from the link above).
+The CMake script should hopefully detect it with `find_package`.
+This requires that certain environment variables are set up
+from a script provided by intel. 
+See [Windows Instructions](https://www.intel.com/content/www/us/en/docs/oneapi/programming-guide/2024-2/use-the-setvars-and-oneapi-vars-scripts-with-linux.html)
+and  [Linux instructions](https://www.intel.com/content/www/us/en/docs/oneapi/programming-guide/2024-2/use-the-setvars-and-oneapi-vars-scripts-with-linux.html).
+
+Note that on Linux, when trying to use CMake tools integrated into an IDE like CLion,
+it's helpfule to add a toolchain Settings->Build, Execution, and Deployment->Toolchains
+that runs the `/opt/intel/oneapi/setvars.sh` environment file.
+Then, build configurations can be set to use this toolchain.
+
+JUCE and Highway are included as git submodules. 
+You can pudate them with
+`git submodule update --init`
+
+
+
+Build using cmake (at least version 3.14). 
+For example:
+```bash
+mkdir build
+cd build
+cmake ..
+
+```

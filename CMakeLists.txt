@@ -13,7 +13,6 @@ if (APPLE)
     set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=RelWithDebInfo] "dwarf-with-dsym")
 endif()
 
-message(APPLE)
 if ( NOT APPLE)
     message("Finding Intel MKL")
     set(MKL_LINK "static")
@@ -75,7 +74,7 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(LibsFolderName "Libraries")
 
-set(JUCE_PATH "" CACHE PATH "Path to JUCE")
+set(JUCE_PATH "JUCE" CACHE PATH "Path to JUCE")
 
 set(JUCE_COPY_PLUGIN_AFTER_BUILD ON)
 set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
