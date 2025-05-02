@@ -33,11 +33,27 @@ You can pudate them with
 
 
 
-Build using cmake (at least version 3.14). 
+Generate a build system using cmake (at least version 3.14). 
 For example:
 ```bash
 mkdir build
 cd build
 cmake ..
 
+```
+
+To generate a Release build, use 
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+
+Check cmake docs for more info about selecting a generator.
+For exmaple, to use Ninja:
+```bash
+cmake .. -G Ninja
+```
+
+Then build with
+```bash
+cmake --build .
 ```
