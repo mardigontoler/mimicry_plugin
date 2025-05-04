@@ -9,9 +9,9 @@ static constexpr float tau = 2 * juce::MathConstants<float>::pi;
 
 MultiPhaseVocoder::MultiPhaseVocoder(const size_t numVocoders)
         :
-		forwardFFT(PV::fftOrder),
-        inverseFFT(PV::fftOrder),
-        window(PV::FFT_SIZE, juce::dsp::WindowingFunction<float>::WindowingMethod::hann),
+		forwardFFT(fftOrder),
+        inverseFFT(fftOrder),
+        window(FFT_SIZE, juce::dsp::WindowingFunction<float>::WindowingMethod::hann),
         mNumVocoders(numVocoders)
 {
 	for (size_t ix = 0; ix < numVocoders; ix++)
@@ -19,9 +19,11 @@ MultiPhaseVocoder::MultiPhaseVocoder(const size_t numVocoders)
 		mOutputSections.emplace_back(OutputSection{});
 	}
 
-    for(size_t k = 0; k < PV::FFT_SIZE; k++)
+    for(size_t k = 0; k < FFT_SIZE; k++)
     {
-        omegas[k] = (tau * static_cast<float>(k)) / PV::FFT_SIZE;
+    	const auto omega = (tau * static_cast<float>(k)) / FFT_SIZE;
+        omegas[k] = omega;
+    	analysisHopSizeScaledOmegas[k] = analysisHopSize * omega;
     }
 }
 
@@ -39,20 +41,22 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
     // but we should still be adding samples so that the queue stays full
 
     fifo[fifoIndex] = sample;
-    fifoIndex = (fifoIndex + 1) % PV::FFT_SIZE;
+    fifoIndex = (fifoIndex + 1) % FFT_SIZE;
     fifosWritten++;
-    if (fifosWritten == PV::FFT_SIZE)
+    if (fifosWritten == FFT_SIZE)
     {
+    	// we now have enough samples to do processing.
+
 		jassert(analysisHopSize <= fifosWritten);
         fifosWritten -= analysisHopSize;
 
-		for (size_t i = 0; i < PV::FFT_SIZE; i++) {
-			timeDomainRealTmp[i] = fifo[(fifoRead + i) % PV::FFT_SIZE];
+		for (size_t i = 0; i < FFT_SIZE; i++) {
+			timeDomainRealTmp[i] = fifo[(fifoRead + i) % FFT_SIZE];
 		}
-		window.multiplyWithWindowingTable(timeDomainRealTmp.data(), PV::FFT_SIZE);
+		window.multiplyWithWindowingTable(timeDomainRealTmp.data(), FFT_SIZE);
 
 		// copy fifo complex values
-		for (size_t j = 0; j < PV::FFT_SIZE; j++) {
+		for (size_t j = 0; j < FFT_SIZE; j++) {
 			timeDomainTmp[j] = {timeDomainRealTmp[j], 0};
 		}
 
@@ -70,19 +74,19 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 
 			if(!juce::approximatelyEqual(section.factor, 1.0f)) { // pitch shift
 
-				const auto &sz = PV::FFT_SIZE;
+				const auto &sz = FFT_SIZE;
 				inverseFFT.perform(section.freqFftData.data(), section.inverseFftOutput.data(), true);
 				for (size_t ix = 0; ix < sz; ix++) {
 					section.inverseFftRealOutput[ix] = section.inverseFftOutput[ix].real();
 				}
 
-				window.multiplyWithWindowingTable(section.inverseFftRealOutput.data(), PV::FFT_SIZE);
+				window.multiplyWithWindowingTable(section.inverseFftRealOutput.data(), FFT_SIZE);
 
-				for (size_t i = 0; i < PV::FFT_SIZE; i++) {
+				for (size_t i = 0; i < FFT_SIZE; i++) {
 					// scale amplitude down by number of overlapping windows, and write to output buffer, directly where
 					// it's being read from
 					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % section.outputData.size()] +=
-							section.inverseFftRealOutput[i] / static_cast<float>(PV::analysisOverlapFactor);
+							section.inverseFftRealOutput[i] / static_cast<float>(analysisOverlapFactor);
 				}
 			}
 			else { // factor is 1, so don't pitch shift
@@ -141,24 +145,34 @@ float MultiPhaseVocoder::nextSample(size_t vocoderIx)
 }
 
 
-
-void MultiPhaseVocoder::phaseCorrect(OutputSection& section)
+// the original phase adjustment function, used before the SIMD was added. Leaving in for reference,
+// and to test the new version against
+void MultiPhaseVocoder::phaseCorrect(OutputSection& section) const
 {
+	using namespace juce::dsp;
+
 	auto& oldInputPhases = section.oldInputPhases;
 	auto& oldOutputPhases = section.oldOutputPhases;
 	auto& freqFftData = section.freqFftData;
 
-	for(size_t i = 0 ; i < PV::FFT_SIZE; i++) {
+	jassert(JUCE_USE_SIMD);
 
-		const float inputPhase = std::arg(freqFftData[i]);
+	constexpr size_t realFloatSimdRegSz = SIMDRegister<float>::SIMDNumElements;
+	constexpr size_t complexFloatSimdRegSz = SIMDRegister<std::complex<float>>::SIMDNumElements;
+
+	jassert(FFT_SIZE % complexFloatSimdRegSz == 0);
+
+	for(size_t i = 0 ; i < FFT_SIZE; i++) {
+
+		const float inputPhase = std::arg(freqFftData[i]); // std::atan2(std::imag(z), std::real(z))
 		const float omega = omegas[i];
 
 		float deltaInputPhase = inputPhase - oldInputPhases[i] - (static_cast<float>(analysisHopSize) * omega);
 		deltaInputPhase = deltaInputPhase - tau * std::round(deltaInputPhase / tau);
 		oldInputPhases[i] = inputPhase;
-		float instantaneousFrequency = omega + (deltaInputPhase / static_cast<float>(analysisHopSize));
+		const float instantaneousFrequency = omega + (deltaInputPhase / static_cast<float>(analysisHopSize));
 
-		float outputPhase = oldOutputPhases[i] +(static_cast<float>(section.synthesisHopSize) * instantaneousFrequency);
+		float outputPhase = oldOutputPhases[i] + (static_cast<float>(section.synthesisHopSize) * instantaneousFrequency);
 		outputPhase -= tau * std::round(outputPhase / tau);
 
 		oldOutputPhases[i] = outputPhase;
@@ -166,6 +180,53 @@ void MultiPhaseVocoder::phaseCorrect(OutputSection& section)
 		// complex multiplication to rotate the fft values so that they match the target output phases
 		freqFftData[i] *= std::polar(1.0f, outputPhase - inputPhase);
 	}
+}
+
+
+
+void MultiPhaseVocoder::phaseCorrectSIMD(OutputSection& section) const
+{
+	using namespace juce::dsp;
+
+	auto& oldInputPhases = section.oldInputPhases;
+	auto& oldOutputPhases = section.oldOutputPhases;
+	auto& freqFftData = section.freqFftData;
+
+	jassert(JUCE_USE_SIMD);
+
+	constexpr size_t realFloatSimdRegSz = SIMDRegister<float>::SIMDNumElements;
+	constexpr size_t complexFloatSimdRegSz = SIMDRegister<std::complex<float>>::SIMDNumElements;
+
+	jassert(FFT_SIZE % complexFloatSimdRegSz == 0);
+
+	// get complex arugment (phase angle) of FFT frequency bins
+
+	float inputPhase[FFT_SIZE]{};
+
+	// separate frequency bins into real and imaginary scalar arrays
+	for (size_t ix = 0; ix < FFT_SIZE; ++ix)
+	{
+		inputPhase[ix] = std::arg(freqFftData[ix]); // std::atan2(std::imag(z), std::real(z))
+	}
+
+	const auto tauReg = SIMDRegister<float>(tau);
+
+	for (size_t offset = 0; offset < FFT_SIZE; offset += realFloatSimdRegSz)
+	{
+		auto inputPhaseReg = SIMDRegister<float>::fromRawArray(inputPhase + offset);
+		auto omegasReg = SIMDRegister<float>::fromRawArray(omegas.data() + offset);
+		auto analysisHopScaledOmegas = SIMDRegister<float>::fromRawArray(analysisHopSizeScaledOmegas.data() + offset);
+
+		auto oldInputPhaseReg = SIMDRegister<float>::fromRawArray(oldInputPhases.data() + offset);
+		auto deltaInputPhaseReg = inputPhaseReg - oldInputPhaseReg;
+		deltaInputPhaseReg -= analysisHopScaledOmegas;
+
+		inputPhaseReg.copyToRawArray(oldInputPhases.data() + offset);
+
+
+	}
+
+
 }
 
 

@@ -19,7 +19,7 @@ class MultiPhaseVocoder {
 
 public:
 
-    MultiPhaseVocoder(size_t numVocoders);
+    explicit MultiPhaseVocoder(size_t numVocoders);
 
     ~MultiPhaseVocoder() = default;
 
@@ -29,7 +29,7 @@ public:
 
 	[[maybe_unused]] [[maybe_unused]] [[nodiscard]] size_t getDelay() const;
 
-    void setPitchShiftSemitones(size_t vocoderIx, const float numSemitones);
+    void setPitchShiftSemitones(size_t vocoderIx, float numSemitones);
 
 protected:
 
@@ -41,7 +41,7 @@ protected:
     juce::dsp::WindowingFunction<float> window;
 
     std::array<float, PV::FFT_SIZE> fifo{};
-	std::array<float, PV::FFT_SIZE> timeDomainRealTmp;
+	std::array<float, PV::FFT_SIZE> timeDomainRealTmp{};
     std::array<PV::Complex_t, PV::FFT_SIZE> timeDomainTmp{};
     std::array<PV::Complex_t, PV::FFT_SIZE> freqDomainTmp{};
 
@@ -65,8 +65,9 @@ protected:
 
 	std::vector<OutputSection> mOutputSections;
 
-    // These stays constant for a particular FFT_SIZE. Represents how much to propgate the phase of each frequency bin
+    // These stay constant for a particular FFT_SIZE. Represents how much to propgate the phase of each frequency bin
     std::array<float, PV::FFT_SIZE> omegas{};
+	std::array<float, PV::FFT_SIZE> analysisHopSizeScaledOmegas{};
 
     bool outputReady = false;
 
@@ -76,5 +77,6 @@ protected:
 
 	size_t mNumVocoders = 1;
 
-    void phaseCorrect(OutputSection& section);
+	__declspec(noinline)void phaseCorrect(OutputSection& section) const;
+    __declspec(noinline)void phaseCorrectSIMD(OutputSection& section) const;
 };
