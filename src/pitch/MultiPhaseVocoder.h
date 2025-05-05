@@ -4,6 +4,8 @@
 #include "juce_core/juce_core.h"
 #include "juce_dsp/juce_dsp.h"
 
+#include "hwy/aligned_allocator.h"
+
 
 namespace PV
 {
@@ -14,7 +16,8 @@ namespace PV
 		static constexpr size_t analysisHopSize = FFT_SIZE / analysisOverlapFactor;
 
 	};
-	typedef juce::dsp::Complex<float> Complex_t;
+
+	typedef std::complex<float> Complex_t;
 
 
 	class MultiPhaseVocoder {
@@ -33,6 +36,8 @@ namespace PV
 
 		void setPitchShiftSemitones(size_t vocoderIx, float numSemitones);
 
+		static size_t outputSectionLength();
+
 	protected:
 
 		static constexpr float maxFactor = 2.0f;
@@ -42,23 +47,25 @@ namespace PV
 		juce::dsp::FFT inverseFFT;
 		juce::dsp::WindowingFunction<float> window;
 
-		std::array<float, PvConstants::FFT_SIZE> fifo{};
-		std::array<float, PvConstants::FFT_SIZE> timeDomainRealTmp{};
-		std::array<Complex_t, PvConstants::FFT_SIZE> timeDomainTmp{};
-		std::array<Complex_t, PvConstants::FFT_SIZE> freqDomainTmp{};
+		hwy::AlignedFreeUniquePtr<float[]> fifo;
+		hwy::AlignedFreeUniquePtr<float[]> timeDomainRealTmp;
+		hwy::AlignedFreeUniquePtr<Complex_t[]> timeDomainTmp;
+		hwy::AlignedFreeUniquePtr<Complex_t[]> freqDomainTmp;
 
 		struct OutputSection {
+
+			OutputSection();
 
 			float factor = 1.0f;
 			int synthesisHopSize = static_cast<int>(factor * static_cast<float>(PvConstants::analysisHopSize));
 
-			std::array<Complex_t, PvConstants::FFT_SIZE> freqFftData{}; // buffer for freq domain data
-			std::array<Complex_t, PvConstants::FFT_SIZE> inverseFftOutput{}; // buffer for time domain data (complex)
-			std::array<float, PvConstants::FFT_SIZE> inverseFftRealOutput{}; // buffer for time domain data (complex)
+			std::vector<Complex_t> freqFftData; // buffer for freq domain data
+			std::vector<Complex_t> inverseFftOutput; // buffer for time domain data (complex)
+			hwy::AlignedFreeUniquePtr<float[]> inverseFftRealOutput; // buffer for time domain data (complex)
 
-			std::array<float, PvConstants::FFT_SIZE> oldInputPhases{};
-			std::array<float, PvConstants::FFT_SIZE> oldOutputPhases{};
-			std::array<float, (4 * PvConstants::FFT_SIZE * static_cast<int>(maxFactor))> outputData{};
+			hwy::AlignedFreeUniquePtr<float[]>oldInputPhases;
+			hwy::AlignedFreeUniquePtr<float[]>oldOutputPhases;
+			hwy::AlignedFreeUniquePtr<float[]> outputData;
 
 			double outputIndex = 0;
 			size_t lastLeftIndex = 0;
@@ -68,8 +75,8 @@ namespace PV
 		std::vector<OutputSection> mOutputSections;
 
 		// These stay constant for a particular FFT_SIZE. Represents how much to propgate the phase of each frequency bin
-		std::array<float, PvConstants::FFT_SIZE> omegas{};
-		std::array<float, PvConstants::FFT_SIZE> analysisHopSizeScaledOmegas{};
+		hwy::AlignedFreeUniquePtr<float[]> omegas;
+		hwy::AlignedFreeUniquePtr<float[]> analysisHopSizeScaledOmegas;
 
 		bool outputReady = false;
 
