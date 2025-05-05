@@ -36,8 +36,6 @@ namespace PV
 
 		void setPitchShiftSemitones(size_t vocoderIx, float numSemitones);
 
-		static size_t outputSectionLength();
-
 	protected:
 
 		static constexpr float maxFactor = 2.0f;
@@ -47,10 +45,10 @@ namespace PV
 		juce::dsp::FFT inverseFFT;
 		juce::dsp::WindowingFunction<float> window;
 
-		hwy::AlignedFreeUniquePtr<float[]> fifo;
-		hwy::AlignedFreeUniquePtr<float[]> timeDomainRealTmp;
-		hwy::AlignedFreeUniquePtr<Complex_t[]> timeDomainTmp;
-		hwy::AlignedFreeUniquePtr<Complex_t[]> freqDomainTmp;
+		std::vector<float, hwy::AlignedAllocator<float>> fifo;
+		std::vector<float, hwy::AlignedAllocator<float>> timeDomainRealTmp;
+		std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>>  timeDomainTmp;
+		std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>>  freqDomainTmp;
 
 		struct OutputSection {
 
@@ -59,13 +57,14 @@ namespace PV
 			float factor = 1.0f;
 			int synthesisHopSize = static_cast<int>(factor * static_cast<float>(PvConstants::analysisHopSize));
 
-			std::vector<Complex_t> freqFftData; // buffer for freq domain data
-			std::vector<Complex_t> inverseFftOutput; // buffer for time domain data (complex)
-			hwy::AlignedFreeUniquePtr<float[]> inverseFftRealOutput; // buffer for time domain data (complex)
+			std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>> freqFftData; // buffer for freq domain data
+			std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>> inverseFftOutput; // buffer for time domain data (complex)
 
-			hwy::AlignedFreeUniquePtr<float[]>oldInputPhases;
-			hwy::AlignedFreeUniquePtr<float[]>oldOutputPhases;
-			hwy::AlignedFreeUniquePtr<float[]> outputData;
+			std::vector<float, hwy::AlignedAllocator<float>> inverseFftRealOutput; // buffer for time domain data (complex)
+
+			std::vector<float, hwy::AlignedAllocator<float>> oldInputPhases;
+			std::vector<float, hwy::AlignedAllocator<float>> oldOutputPhases;
+			std::vector<float, hwy::AlignedAllocator<float>> outputData;
 
 			double outputIndex = 0;
 			size_t lastLeftIndex = 0;

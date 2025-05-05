@@ -14,10 +14,10 @@ MultiPhaseVocoder::MultiPhaseVocoder(const size_t numVocoders)
 		forwardFFT(PvConstants::fftOrder),
         inverseFFT(PvConstants::fftOrder),
         window(PvConstants::FFT_SIZE, juce::dsp::WindowingFunction<float>::WindowingMethod::hann),
-		fifo(AllocateAligned<float>(PvConstants::FFT_SIZE)),
-		timeDomainRealTmp(AllocateAligned<float>(PvConstants::FFT_SIZE)),
-		timeDomainTmp(AllocateAligned<Complex_t>(PvConstants::FFT_SIZE)),
-		freqDomainTmp(AllocateAligned<Complex_t>(PvConstants::FFT_SIZE)),
+		fifo(PvConstants::FFT_SIZE),
+		timeDomainRealTmp(PvConstants::FFT_SIZE),
+		timeDomainTmp(PvConstants::FFT_SIZE),
+		freqDomainTmp(PvConstants::FFT_SIZE),
 		mOutputSections(numVocoders),
 		omegas(AllocateAligned<float>(PvConstants::FFT_SIZE)),
 		analysisHopSizeScaledOmegas(AllocateAligned<float>(PvConstants::FFT_SIZE)),
@@ -61,25 +61,25 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 		for (size_t i = 0; i < FFT_SIZE; i++) {
 			timeDomainRealTmp[i] = fifo[(fifoRead + i) % FFT_SIZE];
 		}
-		window.multiplyWithWindowingTable(timeDomainRealTmp.get(), FFT_SIZE);
+		window.multiplyWithWindowingTable(timeDomainRealTmp.data(), FFT_SIZE);
 
 		// copy fifo complex values
 		for (size_t j = 0; j < FFT_SIZE; j++) {
 			timeDomainTmp[j] = {timeDomainRealTmp[j], 0};
 		}
 
-		forwardFFT.perform(timeDomainTmp.get(), freqDomainTmp.get(), false);
+		forwardFFT.perform(timeDomainTmp.data(), freqDomainTmp.data(), false);
 
 		for (auto& section : mOutputSections)
 		{
 			// copy the frequency domain data into each pitch shifter output section
-			auto sz =  sizeof(Complex_t) * FFT_SIZE;
-			std::memcpy(section.freqFftData.data(), freqDomainTmp.get(), sz);
-//			section.freqFftData = freqDomainTmp;
+			section.freqFftData = freqDomainTmp;
 		}
 
 		for (auto& section : mOutputSections)
 		{
+			auto secOutputDataSz = section.outputData.size();
+
 			phaseCorrect(section); // mutates freqFftData to
 
 			if(!juce::approximatelyEqual(section.factor, 1.0f)) { // pitch shift
@@ -90,19 +90,19 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 					section.inverseFftRealOutput[ix] = section.inverseFftOutput[ix].real();
 				}
 
-				window.multiplyWithWindowingTable(section.inverseFftRealOutput.get(), FFT_SIZE);
+				window.multiplyWithWindowingTable(section.inverseFftRealOutput.data(), FFT_SIZE);
 
 				for (size_t i = 0; i < FFT_SIZE; i++) {
 					// scale amplitude down by number of overlapping windows, and write to output buffer, directly where
 					// it's being read from
-					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % outputSectionLength()] +=
+					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % secOutputDataSz] +=
 							section.inverseFftRealOutput[i] / static_cast<float>(analysisOverlapFactor);
 				}
 			}
 			else { // factor is 1, so don't pitch shift
 				// pass the new fifo samples straight to the output buffer
 				for (size_t i = 0; i < analysisHopSize; i++) {
-					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % outputSectionLength() ] = fifo[(fifoRead + i) % FFT_SIZE];
+					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % secOutputDataSz ] = fifo[(fifoRead + i) % FFT_SIZE];
 				}
 			}
 
@@ -129,11 +129,11 @@ float MultiPhaseVocoder::nextSample(size_t vocoderIx)
 
 	auto& section = mOutputSections[vocoderIx];
 
-	auto outputSecLen= outputSectionLength();
+	auto outputSecLen = section.outputData.size();
 
 	// move the output read head by the ratio
 	// Return linearly interpolated values.
-	const size_t leftIndex = floor(section.outputIndex);
+	const auto leftIndex = static_cast<const size_t>(floor(section.outputIndex));
 	const double sample1 = section.outputData[leftIndex];
 	const auto frac = section.outputIndex - static_cast<double>(leftIndex);
 	section.outputIndex += section.factor;
@@ -203,8 +203,8 @@ void MultiPhaseVocoder::phaseCorrectSIMD(OutputSection& section)
 	PvConstants constants;
 
 	pitch_functions::PhaseCorrectArgs args{
-		oldInputPhases.get(),
-		oldOutputPhases.get(),
+		oldInputPhases.data(),
+		oldOutputPhases.data(),
 		freqFftData.data(),
 		omegas.get(),
 		section.synthesisHopSize,
@@ -235,18 +235,13 @@ void MultiPhaseVocoder::setPitchShiftSemitones(size_t vocoderIx, const float num
     return analysisHopSize;
 }
 
-size_t MultiPhaseVocoder::outputSectionLength()
-{
-	return (4 * PvConstants::FFT_SIZE * static_cast<int>(maxFactor));
-}
-
 
 MultiPhaseVocoder::OutputSection::OutputSection()
 	: freqFftData(PvConstants::FFT_SIZE),
 	inverseFftOutput(PvConstants::FFT_SIZE),
-	inverseFftRealOutput(AllocateAligned<float>(PvConstants::FFT_SIZE)),
-	oldInputPhases(AllocateAligned<float>(PvConstants::FFT_SIZE)),
-	oldOutputPhases(AllocateAligned<float>(PvConstants::FFT_SIZE)),
-	outputData(AllocateAligned<float>(outputSectionLength()))
+	inverseFftRealOutput(PvConstants::FFT_SIZE),
+	oldInputPhases(PvConstants::FFT_SIZE),
+	oldOutputPhases(PvConstants::FFT_SIZE),
+	outputData(4 * PvConstants::FFT_SIZE * static_cast<int>(maxFactor))
 {
 }
