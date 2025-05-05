@@ -34,8 +34,6 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
     add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 endif()
 
-
-# Set up the parent CMake project for the server binaries
 project(mimicry VERSION 0.1)
 
 set(SRC ../src)
