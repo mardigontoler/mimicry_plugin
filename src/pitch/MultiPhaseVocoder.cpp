@@ -1,17 +1,17 @@
 
-#include "MultiPhaseVocoder.h"
+
+#include "pitch_functions.h"
 
 
 using namespace PV;
-
 static constexpr float tau = 2 * juce::MathConstants<float>::pi;
 
 
 MultiPhaseVocoder::MultiPhaseVocoder(const size_t numVocoders)
-        :
-		forwardFFT(fftOrder),
-        inverseFFT(fftOrder),
-        window(FFT_SIZE, juce::dsp::WindowingFunction<float>::WindowingMethod::hann),
+		:
+		forwardFFT(PvConstants::fftOrder),
+        inverseFFT(PvConstants::fftOrder),
+        window(PvConstants::FFT_SIZE, juce::dsp::WindowingFunction<float>::WindowingMethod::hann),
         mNumVocoders(numVocoders)
 {
 	for (size_t ix = 0; ix < numVocoders; ix++)
@@ -19,11 +19,11 @@ MultiPhaseVocoder::MultiPhaseVocoder(const size_t numVocoders)
 		mOutputSections.emplace_back(OutputSection{});
 	}
 
-    for(size_t k = 0; k < FFT_SIZE; k++)
+    for(size_t k = 0; k < PvConstants::FFT_SIZE; k++)
     {
-    	const auto omega = (tau * static_cast<float>(k)) / FFT_SIZE;
+    	const auto omega = (tau * static_cast<float>(k)) / PvConstants::FFT_SIZE;
         omegas[k] = omega;
-    	analysisHopSizeScaledOmegas[k] = analysisHopSize * omega;
+    	analysisHopSizeScaledOmegas[k] = PvConstants::analysisHopSize * omega;
     }
 }
 
@@ -40,8 +40,12 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
     // we can bypass the actual processing when the factor is 1 (no pitch shift)
     // but we should still be adding samples so that the queue stays full
 
+	auto& FFT_SIZE = PvConstants::FFT_SIZE;
+	auto& analysisHopSize = PvConstants::analysisHopSize;
+	auto& analysisOverlapFactor = PvConstants::analysisOverlapFactor;
+
     fifo[fifoIndex] = sample;
-    fifoIndex = (fifoIndex + 1) % FFT_SIZE;
+    fifoIndex = (fifoIndex + 1) % PvConstants::FFT_SIZE;
     fifosWritten++;
     if (fifosWritten == FFT_SIZE)
     {
@@ -92,7 +96,7 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 			else { // factor is 1, so don't pitch shift
 				// pass the new fifo samples straight to the output buffer
 				for (size_t i = 0; i < analysisHopSize; i++) {
-					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % section.outputData.size() ] = fifo[(fifoRead + i) % PV::FFT_SIZE];
+					section.outputData[(static_cast<size_t>(floor(section.outputIndex)) + i) % section.outputData.size() ] = fifo[(fifoRead + i) % FFT_SIZE];
 				}
 			}
 
@@ -101,7 +105,7 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
         outputReady = true;
 
         fifoRead = static_cast<size_t>(
-				juce::negativeAwareModulo(static_cast<int>((fifoRead) + analysisHopSize) , PV::FFT_SIZE)
+				juce::negativeAwareModulo(static_cast<int>((fifoRead) + analysisHopSize) , FFT_SIZE)
 				);
 
     }
@@ -147,20 +151,16 @@ float MultiPhaseVocoder::nextSample(size_t vocoderIx)
 
 // the original phase adjustment function, used before the SIMD was added. Leaving in for reference,
 // and to test the new version against
-void MultiPhaseVocoder::phaseCorrect(OutputSection& section) const
+void MultiPhaseVocoder::phaseCorrect(OutputSection& section)
 {
 	using namespace juce::dsp;
+
+	auto& FFT_SIZE = PvConstants::FFT_SIZE;
+	auto& analysisHopSize = PvConstants::analysisHopSize;
 
 	auto& oldInputPhases = section.oldInputPhases;
 	auto& oldOutputPhases = section.oldOutputPhases;
 	auto& freqFftData = section.freqFftData;
-
-	jassert(JUCE_USE_SIMD);
-
-	constexpr size_t realFloatSimdRegSz = SIMDRegister<float>::SIMDNumElements;
-	constexpr size_t complexFloatSimdRegSz = SIMDRegister<std::complex<float>>::SIMDNumElements;
-
-	jassert(FFT_SIZE % complexFloatSimdRegSz == 0);
 
 	for(size_t i = 0 ; i < FFT_SIZE; i++) {
 
@@ -184,7 +184,7 @@ void MultiPhaseVocoder::phaseCorrect(OutputSection& section) const
 
 
 
-void MultiPhaseVocoder::phaseCorrectSIMD(OutputSection& section) const
+void MultiPhaseVocoder::phaseCorrectSIMD(OutputSection& section)
 {
 	using namespace juce::dsp;
 
@@ -192,46 +192,25 @@ void MultiPhaseVocoder::phaseCorrectSIMD(OutputSection& section) const
 	auto& oldOutputPhases = section.oldOutputPhases;
 	auto& freqFftData = section.freqFftData;
 
-	jassert(JUCE_USE_SIMD);
+	PvConstants constants;
 
-	constexpr size_t realFloatSimdRegSz = SIMDRegister<float>::SIMDNumElements;
-	constexpr size_t complexFloatSimdRegSz = SIMDRegister<std::complex<float>>::SIMDNumElements;
+	pitch_functions::PhaseCorrectArgs args{
+		oldInputPhases.data(),
+		oldOutputPhases.data(),
+		freqFftData.data(),
+		omegas.data(),
+		section.synthesisHopSize,
+		constants
+	};
 
-	jassert(FFT_SIZE % complexFloatSimdRegSz == 0);
-
-	// get complex arugment (phase angle) of FFT frequency bins
-
-	float inputPhase[FFT_SIZE]{};
-
-	// separate frequency bins into real and imaginary scalar arrays
-	for (size_t ix = 0; ix < FFT_SIZE; ++ix)
-	{
-		inputPhase[ix] = std::arg(freqFftData[ix]); // std::atan2(std::imag(z), std::real(z))
-	}
-
-	const auto tauReg = SIMDRegister<float>(tau);
-
-	for (size_t offset = 0; offset < FFT_SIZE; offset += realFloatSimdRegSz)
-	{
-		auto inputPhaseReg = SIMDRegister<float>::fromRawArray(inputPhase + offset);
-		auto omegasReg = SIMDRegister<float>::fromRawArray(omegas.data() + offset);
-		auto analysisHopScaledOmegas = SIMDRegister<float>::fromRawArray(analysisHopSizeScaledOmegas.data() + offset);
-
-		auto oldInputPhaseReg = SIMDRegister<float>::fromRawArray(oldInputPhases.data() + offset);
-		auto deltaInputPhaseReg = inputPhaseReg - oldInputPhaseReg;
-		deltaInputPhaseReg -= analysisHopScaledOmegas;
-
-		inputPhaseReg.copyToRawArray(oldInputPhases.data() + offset);
-
-
-	}
-
-
+	pitch_functions::PhaseCorrectSIMD(&args);
 }
 
 
 void MultiPhaseVocoder::setPitchShiftSemitones(size_t vocoderIx, const float numSemitones)
 {
+	auto& analysisHopSize = PvConstants::analysisHopSize;
+
 	if (vocoderIx >= mOutputSections.size())
 	{
 		jassertfalse;
@@ -244,5 +223,6 @@ void MultiPhaseVocoder::setPitchShiftSemitones(size_t vocoderIx, const float num
 
 
 [[maybe_unused]] size_t MultiPhaseVocoder::getDelay() const {
+	auto& analysisHopSize = PvConstants::analysisHopSize;
     return analysisHopSize;
 }

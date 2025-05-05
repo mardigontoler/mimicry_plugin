@@ -27,7 +27,7 @@
 #pragma ide diagnostic ignored "modernize-concat-nested-namespaces"
 
 #undef HWY_TARGET_INCLUDE
-#define HWY_TARGET_INCLUDE "hwy/examples/benchmark.cc"
+#define HWY_TARGET_INCLUDE "benchmark_phase_correct.cpp"
 #include "hwy/foreach_target.h"  // IWYU pragma: keep
 
 // Must come after foreach_target.h to avoid redefinition errors.

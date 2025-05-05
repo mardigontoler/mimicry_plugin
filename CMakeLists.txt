@@ -135,6 +135,8 @@ target_sources(mimicry PRIVATE
     src/gui/WhiteLabelLookAndFeel.h
     src/pitch/MultiPhaseVocoder.cpp
     src/pitch/MultiPhaseVocoder.h
+    src/pitch/pitch_functions.h
+    src/pitch/pitch_functions.cpp
     src/util/mimicry_util.h
 )
 
@@ -163,6 +165,12 @@ target_compile_definitions(mimicry
         CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
         JUCE_DSP_USE_INTEL_MKL=1
 )
+target_include_directories(mimicry
+    PRIVATE
+    src/
+    src/pitch
+
+)
 
 
 add_executable(benchmark_phase_correct
@@ -172,4 +180,9 @@ target_link_libraries(benchmark_phase_correct
     PRIVATE
     hwy
     mimicry
+)
+target_include_directories(benchmark_phase_correct
+    PRIVATE
+    src/
+    src/pitch
 )

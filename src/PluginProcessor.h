@@ -68,7 +68,7 @@ private:
 	std::vector<juce::dsp::DelayLine<float>> mDelayLines;
 	size_t mMaxDelayLengthInSamples{};
 
-    MultiPhaseVocoder pitchShifters;
+    PV::MultiPhaseVocoder pitchShifters;
 
     // audio parameter value pointers
     std::atomic<float>* bpmRawParam = nullptr; // tempo
