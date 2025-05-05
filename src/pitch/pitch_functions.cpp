@@ -1,6 +1,17 @@
 
 #include "pitch_functions.h"
 
+#include <cstdio>
+#include <cstdlib>  // abort
+
+#include <cmath>  // std::abs
+#include <memory>
+#include <numeric>  // std::iota, std::inner_product
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-concat-nested-namespaces"
 
 // First undef to prevent error when re-included.
 #undef HWY_TARGET_INCLUDE
@@ -13,7 +24,9 @@
 #include "hwy/foreach_target.h"  // IWYU pragma: keep
 
 // Must come after foreach_target.h to avoid redefinition errors.
+#include "hwy/aligned_allocator.h"
 #include "hwy/highway.h"
+#include "hwy/nanobenchmark.h"
 
 
 
@@ -25,32 +38,41 @@ namespace HWY_NAMESPACE
 {
 
 HWY_ATTR_NO_MSAN void HwyPhaseCorrect(PhaseCorrectArgs *  HWY_RESTRICT args)
-	{
-		constexpr float tau = 2 * juce::MathConstants<float>::pi;
+{
+	namespace hn = hwy::HWY_NAMESPACE;
 
-		auto& fftSize = args->pvConstants.FFT_SIZE;
-		auto& analysisHopSize = args->pvConstants.analysisHopSize;
+	constexpr float tau = 2 * juce::MathConstants<float>::pi;
 
-		for(size_t i = 0 ; i < fftSize; i++) {
+	auto& fftSize = PV::PvConstants::FFT_SIZE;
+	auto& analysisHopSize = PV::PvConstants::analysisHopSize;
+	const auto synthesisHopSizeF = static_cast<float>(args->synthesisHopSize);
 
-			const float inputPhase = std::arg(args->freqFftData[i]); // std::atan2(std::imag(z), std::real(z))
-			const float omega = args->omegas[i];
+	// Define SIMD types
+	const hn::ScalableTag<float> d;  // largest possible vector
 
-			float deltaInputPhase = inputPhase - args->oldInputPhases[i] - (static_cast<float>(analysisHopSize) * omega);
-			deltaInputPhase = deltaInputPhase - tau * std::round(deltaInputPhase / tau);
-			args->oldInputPhases[i] = inputPhase;
-			const float instantaneousFrequency = omega + (deltaInputPhase / static_cast<float>(analysisHopSize));
+//	const hn::ScalableTag<float> d;
+//	const size_t N = Lanes(d);
 
-			float outputPhase = args->oldOutputPhases[i] + (static_cast<float>(args->synthesisHopSize) * instantaneousFrequency);
-			outputPhase -= tau * std::round(outputPhase / tau);
+	for(size_t i = 0 ; i < fftSize; i++) {
 
-			args->oldOutputPhases[i] = outputPhase;
+		const float inputPhase = std::arg(args->freqFftData[i]); // std::atan2(std::imag(z), std::real(z))
+		const float omega = args->omegas[i];
 
-			// complex multiplication to rotate the fft values so that they match the target output phases
-			args->freqFftData[i] *= std::polar(1.0f, outputPhase - inputPhase);
-		}
+		float deltaInputPhase = inputPhase - args->oldInputPhases[i] - (static_cast<float>(analysisHopSize) * omega);
+		deltaInputPhase = deltaInputPhase - tau * std::round(deltaInputPhase / tau);
+		args->oldInputPhases[i] = inputPhase;
+		const float instantaneousFrequency = omega + (deltaInputPhase / static_cast<float>(analysisHopSize));
 
+		float outputPhase = args->oldOutputPhases[i] + (static_cast<float>(args->synthesisHopSize) * instantaneousFrequency);
+		outputPhase -= tau * std::round(outputPhase / tau);
+
+		args->oldOutputPhases[i] = outputPhase;
+
+		// complex multiplication to rotate the fft values so that they match the target output phases
+		args->freqFftData[i] *= std::polar(1.0f, outputPhase - inputPhase);
 	}
+
+}
 
 
 // NOLINTNEXTLINE(google-readability-namespace-comments)
