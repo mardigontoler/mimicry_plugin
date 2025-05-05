@@ -77,6 +77,6 @@ protected:
 
 	size_t mNumVocoders = 1;
 
-	__declspec(noinline)void phaseCorrect(OutputSection& section) const;
-    __declspec(noinline)void phaseCorrectSIMD(OutputSection& section) const;
+	void phaseCorrect(OutputSection& section) const;
+    void phaseCorrectSIMD(OutputSection& section) const;
 };
