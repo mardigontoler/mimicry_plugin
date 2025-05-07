@@ -4,6 +4,3 @@
 [submodule "JUCE"]
 	path = JUCE
 	url = https://github.com/juce-framework/JUCE.git
-[submodule "xsimd"]
-	path = xsimd
-	url = https://github.com/xtensor-stack/xsimd.git
