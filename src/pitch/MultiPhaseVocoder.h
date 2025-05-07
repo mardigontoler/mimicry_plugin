@@ -3,6 +3,7 @@
 
 #include "juce_core/juce_core.h"
 #include "juce_dsp/juce_dsp.h"
+#include <complex>
 
 #include "hwy/aligned_allocator.h"
 

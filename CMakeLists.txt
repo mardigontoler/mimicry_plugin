@@ -180,9 +180,14 @@ target_link_libraries(benchmark_phase_correct
     PRIVATE
     hwy
     mimicry
+    juce::juce_audio_utils
+    juce::juce_dsp
 )
 target_include_directories(benchmark_phase_correct
     PRIVATE
     src/
     src/pitch
+)
+target_compile_definitions(benchmark_phase_correct PRIVATE
+    JUCE_WEB_BROWSER=0
 )

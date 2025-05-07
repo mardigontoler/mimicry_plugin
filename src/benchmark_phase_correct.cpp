@@ -21,10 +21,8 @@
 #include <memory>
 #include <numeric>  // std::iota, std::inner_product
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "modernize-concat-nested-namespaces"
+#include "pitch_functions.h"
+#include "MultiPhaseVocoder.h"
 
 #undef HWY_TARGET_INCLUDE
 #define HWY_TARGET_INCLUDE "benchmark_phase_correct.cpp"
@@ -34,6 +32,13 @@
 #include "hwy/aligned_allocator.h"
 #include "hwy/highway.h"
 #include "hwy/nanobenchmark.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-concat-nested-namespaces"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnreachableCode"
 
 HWY_BEFORE_NAMESPACE();
 namespace hwy {
@@ -107,6 +112,25 @@ namespace hwy {
 			}
 			printf("\nF(x)->2*x^2, F(%.0f) = %.1f\n", in[2], out[2]);
 		}
+
+
+		class BenchmarkPhaseCorrect : public TwoArray {
+			public:
+				BenchmarkPhaseCorrect(){}
+
+				FuncOutput operator()(const size_t num_items) {
+					PV::MultiPhaseVocoder::OutputSection outputSection;
+					PV::PvConstants constants;
+					std::vector<float, hwy::AlignedAllocator<float>> omegas{PV::PvConstants::FFT_SIZE};
+					pitch_functions::PhaseCorrectArgs args{&outputSection, omegas.data(), constants};
+					pitch_functions::PhaseCorrectSIMD(&args);
+					return static_cast<FuncOutput>(outputSection.freqFftData[0].real());
+				}
+				void Verify(size_t num_items)
+				{
+				}
+
+			};
 
 // BEGINNER: dot product
 // 0.4 cyc/float = bronze, 0.25 = silver, 0.15 = gold!
@@ -229,8 +253,9 @@ namespace hwy {
 		void RunBenchmarks() {
 			Intro();
 			printf("------------------------ %s\n", TargetName(HWY_TARGET));
-			RunBenchmark<BenchmarkDot>("dot");
-			RunBenchmark<BenchmarkDelta>("delta");
+//			RunBenchmark<BenchmarkDot>("dot");
+//			RunBenchmark<BenchmarkDelta>("delta");
+			RunBenchmark<BenchmarkPhaseCorrect>("phase correct");
 		}
 
 // NOLINTNEXTLINE(google-readability-namespace-comments)
@@ -258,5 +283,6 @@ int main(int /*argc*/, char** /*argv*/) {
 }
 #endif  // HWY_ONCE
 
+#pragma clang diagnostic pop
 #pragma clang diagnostic pop
 #pragma clang diagnostic pop
