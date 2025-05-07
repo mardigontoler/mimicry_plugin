@@ -1,13 +1,6 @@
 
 #include "pitch_functions.h"
 
-#include <cstdio>
-#include <cstdlib>  // abort
-
-#include <cmath>  // std::abs
-#include <memory>
-#include <numeric>  // std::iota, std::inner_product
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma clang diagnostic push
@@ -27,6 +20,8 @@
 #include "hwy/aligned_allocator.h"
 #include "hwy/highway.h"
 
+#include "hwy/contrib/math/math-inl.h"
+
 
 HWY_BEFORE_NAMESPACE();
 
@@ -38,84 +33,84 @@ namespace HWY_NAMESPACE
 	constexpr float kPI = 3.14159265358979323846f;
 	constexpr float kOneOverTwoPI = 1.0f / kTwoPI;
 
-	template <class D, class V>
-	HWY_ATTR V NormalizeAngle(D d, V x) {
-		const auto v_two_pi = Set(d, kTwoPI);
-		const auto v_pi = Set(d, kPI);
-		const auto v_one_over_two_pi = Set(d, kOneOverTwoPI);
+	// template <class D, class V>
+	// HWY_ATTR V NormalizeAngle(D d, V x) {
+	// 	const auto v_two_pi = Set(d, kTwoPI);
+	// 	const auto v_pi = Set(d, kPI);
+	// 	const auto v_one_over_two_pi = Set(d, kOneOverTwoPI);
+	//
+	// 	// x = x - 2π * round(x / 2π)
+	// 	auto quotient = Mul(x, v_one_over_two_pi);
+	// 	quotient = Round(quotient);
+	// 	x = Sub(x, Mul(quotient, v_two_pi));
+	//
+	// 	// Ensure result is in [-π, π]
+	// 	auto too_high = Gt(x, v_pi);
+	// 	auto too_low = Lt(x, Neg(v_pi));
+	// 	x = IfThenElse(too_high, Sub(x, v_two_pi), x);
+	// 	x = IfThenElse(too_low, Add(x, v_two_pi), x);
+	//
+	// 	return x;
+	// }
+	//
+	//
+	// template <class D, class V>
+	// HWY_MAYBE_UNUSED V CosApprox(D d, V x)
+	// {
+	// 	// taylor series approx for cosine.
+	// 	// 1 - x^2/2! + x^4/4! - x^6/6! ...
+	//
+	// 	namespace hn = hwy::HWY_NAMESPACE;
+	//
+	// 	x = NormalizeAngle(d, x);
+	//
+	// 	const auto x2 = hn::Mul(x, x);
+	// 	const auto x4 = hn::Mul(x2, x2);
+	// 	const auto x6 = hn::Mul(x4, x2);
+	// 	const auto x8 = hn::Mul(x6, x2);
+	//
+	// 	auto v_1 = hn::Set(d, 1.0f);
+	// 	auto v_2 = hn::Set(d, 2.0f);
+	// 	auto v_24 = hn::Set(d, 24.0f);
+	// 	auto v_720 = hn::Set(d, 720.0f);
+	// 	auto v_40320 = hn::Set(d, 40320.0f);
+	//
+	// 	auto result = hn::Sub(v_1, hn::Div(x2, v_2));
+	// 	result = hn::Add(result, hn::Div(x4, v_24));
+	// 	result = hn::Sub(result, hn::Div(x6, v_720));
+	// 	result = hn::Add(result, hn::Div(x8, v_40320));
+	//
+	// 	return result;
+	// }
 
-		// x = x - 2π * round(x / 2π)
-		auto quotient = Mul(x, v_one_over_two_pi);
-		quotient = Round(quotient);
-		x = Sub(x, Mul(quotient, v_two_pi));
-
-		// Ensure result is in [-π, π]
-		auto too_high = Gt(x, v_pi);
-		auto too_low = Lt(x, Neg(v_pi));
-		x = IfThenElse(too_high, Sub(x, v_two_pi), x);
-		x = IfThenElse(too_low, Add(x, v_two_pi), x);
-
-		return x;
-	}
-
-
-	template <class D, class V>
-	HWY_MAYBE_UNUSED V CosApprox(D d, V x)
-	{
-		// taylor series approx for cosine.
-		// 1 - x^2/2! + x^4/4! - x^6/6! ...
-
-		namespace hn = hwy::HWY_NAMESPACE;
-
-		x = NormalizeAngle(d, x);
-
-		const auto x2 = hn::Mul(x, x);
-		const auto x4 = hn::Mul(x2, x2);
-		const auto x6 = hn::Mul(x4, x2);
-		const auto x8 = hn::Mul(x6, x2);
-
-		auto v_1 = hn::Set(d, 1.0f);
-		auto v_2 = hn::Set(d, 2.0f);
-		auto v_24 = hn::Set(d, 24.0f);
-		auto v_720 = hn::Set(d, 720.0f);
-		auto v_40320 = hn::Set(d, 40320.0f);
-
-		auto result = hn::Sub(v_1, hn::Div(x2, v_2));
-		result = hn::Add(result, hn::Div(x4, v_24));
-		result = hn::Sub(result, hn::Div(x6, v_720));
-		result = hn::Add(result, hn::Div(x8, v_40320));
-
-		return result;
-	}
-
-	template <class D, class V>
-	HWY_MAYBE_UNUSED V SinApprox(D d, V x)
-	{
-		// Taylor series approx for sine.
-		// x - x^3/3! + x^5/5! - x^7/7! ...
-
-		namespace hn = hwy::HWY_NAMESPACE;
-
-		x = NormalizeAngle(d, x);
-
-		const auto x2 = hn::Mul(x, x);
-		const auto x3 = hn::Mul(x2, x);
-		const auto x5 = hn::Mul(x3, x2);
-		const auto x7 = hn::Mul(x5, x2);
-		const auto x9 = hn::Mul(x7, x2);
-
-		auto v_6 = hn::Set(d, 6.0f);
-		auto v_120 = hn::Set(d, 120.0f);
-		auto v_5040 = hn::Set(d, 5040.0f);
-		auto v_362880 = hn::Set(d, 362880.0f);
-
-		auto result = hn::Sub(x, hn::Div(x3, v_6));
-		result = hn::Add(result, hn::Div(x5, v_120));
-		result = hn::Sub(result, hn::Div(x7, v_5040));
-		result = hn::Add(result, hn::Div(x9, v_362880));
-
-		return result;
-	}
+	// template <class D, class V>
+	// HWY_MAYBE_UNUSED V SinApprox(D d, V x)
+	// {
+	// 	// Taylor series approx for sine.
+	// 	// x - x^3/3! + x^5/5! - x^7/7! ...
+	//
+	// 	namespace hn = hwy::HWY_NAMESPACE;
+	//
+	// 	x = NormalizeAngle(d, x);
+	//
+	// 	const auto x2 = hn::Mul(x, x);
+	// 	const auto x3 = hn::Mul(x2, x);
+	// 	const auto x5 = hn::Mul(x3, x2);
+	// 	const auto x7 = hn::Mul(x5, x2);
+	// 	const auto x9 = hn::Mul(x7, x2);
+	//
+	// 	auto v_6 = hn::Set(d, 6.0f);
+	// 	auto v_120 = hn::Set(d, 120.0f);
+	// 	auto v_5040 = hn::Set(d, 5040.0f);
+	// 	auto v_362880 = hn::Set(d, 362880.0f);
+	//
+	// 	auto result = hn::Sub(x, hn::Div(x3, v_6));
+	// 	result = hn::Add(result, hn::Div(x5, v_120));
+	// 	result = hn::Sub(result, hn::Div(x7, v_5040));
+	// 	result = hn::Add(result, hn::Div(x9, v_362880));
+	//
+	// 	return result;
+	// }
 
 
 HWY_ATTR_NO_MSAN void HwyPhaseCorrect(PhaseCorrectArgs *  HWY_RESTRICT args)
@@ -135,11 +130,15 @@ HWY_ATTR_NO_MSAN void HwyPhaseCorrect(PhaseCorrectArgs *  HWY_RESTRICT args)
 	const hn::ScalableTag<float> d;  // largest possible vector
 	const size_t N = Lanes(d);
 
-	// precompute complex argument of each dft bin
+	// split complex fft bins into real and imaginary parts for processing
 	for (size_t i = 0; i < fftSize; ++i)
 	{
 		auto cpxFreqSample = section->freqFftData[i];
+
+		// highway has an Atan2 function that can vectorize this, but it seems to be innacurrate enough to sound very bad.
+		// sticking with std::arg for now ...
 		section->freqFftArgs[i] = std::arg(cpxFreqSample);
+
 		section->freqFftReal[i] = cpxFreqSample.real();
 		section->freqFftImag[i] = cpxFreqSample.imag();
 	}
@@ -186,8 +185,8 @@ HWY_ATTR_NO_MSAN void HwyPhaseCorrect(PhaseCorrectArgs *  HWY_RESTRICT args)
 		// std::polar(1.0f, phase_diff) is e^(i*phase_diff) = cos(phase_diff) + i * sin(phase_diff)
 		auto v_real = hn::Load(d, section->freqFftReal.data() + i);
 		auto v_imag = hn::Load(d, section->freqFftImag.data() + i);
-		auto v_cos_diff = CosApprox(d, v_phase_diff);
-		auto v_sin_diff = SinApprox(d, v_phase_diff);
+		auto v_cos_diff = hn::Cos(d, v_phase_diff);  // CosApprox(d, v_phase_diff);
+		auto v_sin_diff = hn::Sin(d, v_phase_diff);  // SinApprox(d, v_phase_diff);
 
 		// complex multiplication: (a + bi)*(c + di) = ac - bd + i(ad + bc),
 		// so (v_real + i v_imag) * (v_cos_diff + i v_sin_diff)

@@ -89,6 +89,8 @@ set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
 message("JUCE_PATH=${JUCE_PATH}")
 add_subdirectory(${JUCE_PATH} build_juce)
 
+set(HWY_ENABLE_TESTS OFF)
+set(HWY_ENABLE_INSTALL OFF)
 add_subdirectory(highway build_highway)
 
 
