@@ -19,15 +19,15 @@ MultiPhaseVocoder::MultiPhaseVocoder(const size_t numVocoders)
 		timeDomainTmp(PvConstants::FFT_SIZE),
 		freqDomainTmp(PvConstants::FFT_SIZE),
 		mOutputSections(numVocoders),
-		omegas(AllocateAligned<float>(PvConstants::FFT_SIZE)),
-		analysisHopSizeScaledOmegas(AllocateAligned<float>(PvConstants::FFT_SIZE)),
+		omegas(PvConstants::FFT_SIZE),
+//		analysisHopSizeScaledOmegas(AllocateAligned<float>(PvConstants::FFT_SIZE)),
 		mNumVocoders(numVocoders)
 {
     for(size_t k = 0; k < PvConstants::FFT_SIZE; k++)
     {
     	const auto omega = (tau * static_cast<float>(k)) / PvConstants::FFT_SIZE;
 		omegas[k] = omega;
-    	analysisHopSizeScaledOmegas[k] = PvConstants::analysisHopSize * omega;
+//    	analysisHopSizeScaledOmegas[k] = PvConstants::analysisHopSize * omega;
     }
 }
 
@@ -80,7 +80,7 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 		{
 			auto secOutputDataSz = section.outputData.size();
 
-			phaseCorrect(section); // mutates freqFftData to
+			phaseCorrectSIMD(section); // mutates freqFftData to
 
 			if(!juce::approximatelyEqual(section.factor, 1.0f)) { // pitch shift
 
@@ -196,18 +196,11 @@ void MultiPhaseVocoder::phaseCorrectSIMD(OutputSection& section)
 {
 	using namespace juce::dsp;
 
-	auto& oldInputPhases = section.oldInputPhases;
-	auto& oldOutputPhases = section.oldOutputPhases;
-	auto& freqFftData = section.freqFftData;
-
 	PvConstants constants;
 
 	pitch_functions::PhaseCorrectArgs args{
-		oldInputPhases.data(),
-		oldOutputPhases.data(),
-		freqFftData.data(),
-		omegas.get(),
-		section.synthesisHopSize,
+		&section,
+		omegas.data(),
 		constants
 	};
 
@@ -238,6 +231,9 @@ void MultiPhaseVocoder::setPitchShiftSemitones(size_t vocoderIx, const float num
 
 MultiPhaseVocoder::OutputSection::OutputSection()
 	: freqFftData(PvConstants::FFT_SIZE),
+	freqFftReal(PvConstants::FFT_SIZE),
+	freqFftImag(PvConstants::FFT_SIZE),
+	freqFftArgs(PvConstants::FFT_SIZE),
 	inverseFftOutput(PvConstants::FFT_SIZE),
 	inverseFftRealOutput(PvConstants::FFT_SIZE),
 	oldInputPhases(PvConstants::FFT_SIZE),

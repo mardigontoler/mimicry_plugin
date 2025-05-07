@@ -36,6 +36,31 @@ namespace PV
 
 		void setPitchShiftSemitones(size_t vocoderIx, float numSemitones);
 
+		struct OutputSection {
+
+			OutputSection();
+
+			float factor = 1.0f;
+			int synthesisHopSize = static_cast<int>(factor * static_cast<float>(PvConstants::analysisHopSize));
+
+			std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>> freqFftData; // buffer for freq domain data
+			std::vector<float, hwy::AlignedAllocator<float>> freqFftReal;
+			std::vector<float, hwy::AlignedAllocator<float>> freqFftImag;
+			std::vector<float, hwy::AlignedAllocator<float>> freqFftArgs;
+			std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>> inverseFftOutput; // buffer for time domain data (complex)
+
+			std::vector<float, hwy::AlignedAllocator<float>> inverseFftRealOutput; // buffer for time domain data (complex)
+
+			std::vector<float, hwy::AlignedAllocator<float>> oldInputPhases;
+			std::vector<float, hwy::AlignedAllocator<float>> oldOutputPhases;
+			std::vector<float, hwy::AlignedAllocator<float>> outputData;
+
+			double outputIndex = 0;
+			size_t lastLeftIndex = 0;
+
+		};
+
+
 	protected:
 
 		static constexpr float maxFactor = 2.0f;
@@ -50,32 +75,10 @@ namespace PV
 		std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>>  timeDomainTmp;
 		std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>>  freqDomainTmp;
 
-		struct OutputSection {
-
-			OutputSection();
-
-			float factor = 1.0f;
-			int synthesisHopSize = static_cast<int>(factor * static_cast<float>(PvConstants::analysisHopSize));
-
-			std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>> freqFftData; // buffer for freq domain data
-			std::vector<Complex_t, hwy::AlignedAllocator<Complex_t>> inverseFftOutput; // buffer for time domain data (complex)
-
-			std::vector<float, hwy::AlignedAllocator<float>> inverseFftRealOutput; // buffer for time domain data (complex)
-
-			std::vector<float, hwy::AlignedAllocator<float>> oldInputPhases;
-			std::vector<float, hwy::AlignedAllocator<float>> oldOutputPhases;
-			std::vector<float, hwy::AlignedAllocator<float>> outputData;
-
-			double outputIndex = 0;
-			size_t lastLeftIndex = 0;
-
-		};
-
 		std::vector<OutputSection> mOutputSections;
 
 		// These stay constant for a particular FFT_SIZE. Represents how much to propgate the phase of each frequency bin
-		hwy::AlignedFreeUniquePtr<float[]> omegas;
-		hwy::AlignedFreeUniquePtr<float[]> analysisHopSizeScaledOmegas;
+		std::vector<float, hwy::AlignedAllocator<float>> omegas;
 
 		bool outputReady = false;
 

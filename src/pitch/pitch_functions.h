@@ -11,20 +11,16 @@
 namespace pitch_functions {
 
 	struct PhaseCorrectArgs{
-		PhaseCorrectArgs(float *oldInputPhases, float *oldOutputPhases, std::complex<float> *freqFftData, float * const omegas,
-						 int synthesisHopSize, const PV::PvConstants &pvConstants) : oldInputPhases(oldInputPhases),
-																					 oldOutputPhases(oldOutputPhases),
-																					 freqFftData(freqFftData),
-																					 omegas(omegas),
-																					 synthesisHopSize(synthesisHopSize),
-																					 pvConstants(pvConstants)
+
+		PhaseCorrectArgs(PV::MultiPhaseVocoder::OutputSection *outputsection, float *omegas,
+						 const PV::PvConstants &pvConstants)
+						 : outputSection(outputsection),
+						 omegas(omegas),
+						 pvConstants(pvConstants)
 		{}
 
-		float* oldInputPhases;
-		float* oldOutputPhases;
-		std::complex<float>* freqFftData;
+		PV::MultiPhaseVocoder::OutputSection* outputSection;
 		float* omegas;
-		int synthesisHopSize;
 		PV::PvConstants pvConstants;
 	};
 
