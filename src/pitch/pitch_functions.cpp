@@ -33,6 +33,129 @@ namespace HWY_NAMESPACE
 	constexpr float kPI = 3.14159265358979323846f;
 	constexpr float kOneOverTwoPI = 1.0f / kTwoPI;
 
+	HWY_ATTR_NO_MSAN void HwyPhaseCorrect(PhaseCorrectArgs *  HWY_RESTRICT args)
+	{
+		namespace hn = hwy::HWY_NAMESPACE;
+
+		constexpr float tau = 2 * juce::MathConstants<float>::pi;
+
+		auto& fftSize = PV::PvConstants::FFT_SIZE;
+
+		auto& section = args->outputSection;
+
+		constexpr auto analysisHopSizeF = static_cast<float>(PV::PvConstants::analysisHopSize);
+		const auto synthesisHopSizeF = static_cast<float>(section->synthesisHopSize);
+
+		// Define SIMD types
+		const hn::ScalableTag<float> d;  // largest possible vector
+		const size_t N = Lanes(d);
+
+		// split complex fft bins into real and imaginary parts for processing
+		for (size_t i = 0; i < fftSize; ++i)
+		{
+			auto cpxFreqSample = section->freqFftData[i];
+
+			// highway has an Atan2 function that can vectorize this, but it seems to be innacurrate enough to sound very bad.
+			// sticking with std::arg for now ...
+			section->freqFftArgs[i] = std::arg(cpxFreqSample);
+
+			section->freqFftReal[i] = cpxFreqSample.real();
+			section->freqFftImag[i] = cpxFreqSample.imag();
+		}
+
+		// Constants in vectors
+		const auto v_tau = hn::Set(d, tau);
+		const auto v_analysis_hop = hn::Set(d, analysisHopSizeF);
+		const auto v_synthesis_hop = hn::Set(d, synthesisHopSizeF);
+
+		for(size_t i = 0 ; i < fftSize; i += N) {
+
+			auto v_input_phase = hn::Load(d, section->freqFftArgs.data() + i);
+			auto v_omega = hn::Load(d, args->omegas + i);
+			auto v_old_input_phase = Load(d, section->oldInputPhases.data() + i);
+
+			auto v_hop_omega = hn::Mul(v_analysis_hop, v_omega);
+			auto v_delta = hn::Sub(v_input_phase, v_old_input_phase);
+			v_delta = hn::Sub(v_delta, v_hop_omega);
+
+			auto v_div = hn::Div(v_delta, v_tau);
+			auto v_round = hn::Round(v_div);
+			v_delta = hn::Sub(v_delta, hn::Mul(v_tau, v_round));
+
+			// store input phase into old input phase
+			hn::Store(v_input_phase, d, section->oldInputPhases.data() + i);
+
+			auto v_inst_freq = hn::Add(v_omega, hn::Div(v_delta, v_analysis_hop));
+
+			auto v_old_output_phase = hn::Load(d, section->oldOutputPhases.data() + i);
+			auto v_output_phase = hn::Add(v_old_output_phase, hn::Mul(v_synthesis_hop, v_inst_freq));
+
+			// normalize
+			v_div = hn::Div(v_output_phase, v_tau);
+			v_round = hn::Round(v_div);
+			v_output_phase = hn::Sub(v_output_phase, hn::Mul(v_tau, v_round));
+
+			hn::Store(v_output_phase, d, section->oldOutputPhases.data() + i);
+
+			// Now perform complex multiplication to rotate the dft values so they match the desired output phases.
+			// Equivalent to args->freqFftData[i] *= std::polar(1.0f, outputPhase - inputPhase);
+			// Each bin is
+
+			auto v_phase_diff = hn::Sub(v_output_phase, v_input_phase);
+			// std::polar(1.0f, phase_diff) is e^(i*phase_diff) = cos(phase_diff) + i * sin(phase_diff)
+			auto v_real = hn::Load(d, section->freqFftReal.data() + i);
+			auto v_imag = hn::Load(d, section->freqFftImag.data() + i);
+			auto v_cos_diff = hn::Cos(d, v_phase_diff);  // CosApprox(d, v_phase_diff);
+			auto v_sin_diff = hn::Sin(d, v_phase_diff);  // SinApprox(d, v_phase_diff);
+
+			// complex multiplication: (a + bi)*(c + di) = ac - bd + i(ad + bc),
+			// so (v_real + i v_imag) * (v_cos_diff + i v_sin_diff)
+			// = (v_real * v_cos_diff) - ( v_imag * v_sin_diff ) + i ( (v_real * v_sin_diff) + (v_imag * v_cos_diff) )
+			auto v_rotated_real = hn::Sub(hn::Mul(v_real, v_cos_diff), hn::Mul(v_imag, v_sin_diff));
+			auto v_rotated_imag = hn::Add(hn::Mul(v_real, v_sin_diff), hn::Mul(v_imag, v_cos_diff));
+
+			hn::Store(v_rotated_real, d, section->freqFftReal.data() + i);
+			hn::Store(v_rotated_imag, d, section->freqFftImag.data() + i);
+		}
+
+		// recombine real and imaginary parts of rotated bins back into complex numbers for final output
+		for (size_t i = 0; i < fftSize; ++i)
+		{
+			section->freqFftData[i] = {section->freqFftReal[i], section->freqFftImag[i]};
+		}
+	}
+
+
+	// NOLINTNEXTLINE(google-readability-namespace-comments)
+	}  // namespace HWY_NAMESPACE
+}  // namespace
+
+
+HWY_AFTER_NAMESPACE();
+
+// The table of pointers to the various implementations in HWY_NAMESPACE must
+// be compiled only once (foreach_target #includes this file multiple times).
+// HWY_ONCE is true for only one of these 'compilation passes'.
+#if HWY_ONCE
+
+namespace pitch_functions
+{
+	// This macro declares a static array used for dynamic dispatch; it resides in
+	// the same outer namespace that contains FloorLog2.
+	HWY_EXPORT(HwyPhaseCorrect);
+
+
+	HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs *  HWY_RESTRICT args)
+	{
+		const auto ptr = HWY_DYNAMIC_POINTER(HwyPhaseCorrect);
+		return ptr(args);
+	}
+}
+
+#endif // HWY_ONCE
+
+
+
 	// template <class D, class V>
 	// HWY_ATTR V NormalizeAngle(D d, V x) {
 	// 	const auto v_two_pi = Set(d, kTwoPI);
@@ -111,125 +234,3 @@ namespace HWY_NAMESPACE
 	//
 	// 	return result;
 	// }
-
-
-HWY_ATTR_NO_MSAN void HwyPhaseCorrect(PhaseCorrectArgs *  HWY_RESTRICT args)
-{
-	namespace hn = hwy::HWY_NAMESPACE;
-
-	constexpr float tau = 2 * juce::MathConstants<float>::pi;
-
-	auto& fftSize = PV::PvConstants::FFT_SIZE;
-
-	auto& section = args->outputSection;
-
-	const auto analysisHopSizeF = static_cast<float>(PV::PvConstants::analysisHopSize);
-	const auto synthesisHopSizeF = static_cast<float>(section->synthesisHopSize);
-
-	// Define SIMD types
-	const hn::ScalableTag<float> d;  // largest possible vector
-	const size_t N = Lanes(d);
-
-	// split complex fft bins into real and imaginary parts for processing
-	for (size_t i = 0; i < fftSize; ++i)
-	{
-		auto cpxFreqSample = section->freqFftData[i];
-
-		// highway has an Atan2 function that can vectorize this, but it seems to be innacurrate enough to sound very bad.
-		// sticking with std::arg for now ...
-		section->freqFftArgs[i] = std::arg(cpxFreqSample);
-
-		section->freqFftReal[i] = cpxFreqSample.real();
-		section->freqFftImag[i] = cpxFreqSample.imag();
-	}
-
-	// Constants in vectors
-	const auto v_tau = hn::Set(d, tau);
-	const auto v_analysis_hop = hn::Set(d, analysisHopSizeF);
-	const auto v_synthesis_hop = hn::Set(d, synthesisHopSizeF);
-
-	for(size_t i = 0 ; i < fftSize; i += N) {
-
-		auto v_input_phase = hn::Load(d, section->freqFftArgs.data() + i);
-		auto v_omega = hn::Load(d, args->omegas + i);
-		auto v_old_input_phase = Load(d, section->oldInputPhases.data() + i);
-
-		auto v_hop_omega = hn::Mul(v_analysis_hop, v_omega);
-		auto v_delta = hn::Sub(v_input_phase, v_old_input_phase);
-		v_delta = hn::Sub(v_delta, v_hop_omega);
-
-		auto v_div = hn::Div(v_delta, v_tau);
-		auto v_round = hn::Round(v_div);
-		v_delta = hn::Sub(v_delta, hn::Mul(v_tau, v_round));
-
-		// store input phase into old input phase
-		hn::Store(v_input_phase, d, section->oldInputPhases.data() + i);
-
-		auto v_inst_freq = hn::Add(v_omega, hn::Div(v_delta, v_analysis_hop));
-
-		auto v_old_output_phase = hn::Load(d, section->oldOutputPhases.data() + i);
-		auto v_output_phase = hn::Add(v_old_output_phase, hn::Mul(v_synthesis_hop, v_inst_freq));
-
-		// normalize
-		v_div = hn::Div(v_output_phase, v_tau);
-		v_round = hn::Round(v_div);
-		v_output_phase = hn::Sub(v_output_phase, hn::Mul(v_tau, v_round));
-
-		hn::Store(v_output_phase, d, section->oldOutputPhases.data() + i);
-
-		// Now perform complex multiplication to rotate the dft values so they match the desired output phases.
-		// Equivalent to args->freqFftData[i] *= std::polar(1.0f, outputPhase - inputPhase);
-		// Each bin is
-
-		auto v_phase_diff = hn::Sub(v_output_phase, v_input_phase);
-		// std::polar(1.0f, phase_diff) is e^(i*phase_diff) = cos(phase_diff) + i * sin(phase_diff)
-		auto v_real = hn::Load(d, section->freqFftReal.data() + i);
-		auto v_imag = hn::Load(d, section->freqFftImag.data() + i);
-		auto v_cos_diff = hn::Cos(d, v_phase_diff);  // CosApprox(d, v_phase_diff);
-		auto v_sin_diff = hn::Sin(d, v_phase_diff);  // SinApprox(d, v_phase_diff);
-
-		// complex multiplication: (a + bi)*(c + di) = ac - bd + i(ad + bc),
-		// so (v_real + i v_imag) * (v_cos_diff + i v_sin_diff)
-		// = (v_real * v_cos_diff) - ( v_imag * v_sin_diff ) + i ( (v_real * v_sin_diff) + (v_imag * v_cos_diff) )
-		auto v_rotated_real = hn::Sub(hn::Mul(v_real, v_cos_diff), hn::Mul(v_imag, v_sin_diff));
-		auto v_rotated_imag = hn::Add(hn::Mul(v_real, v_sin_diff), hn::Mul(v_imag, v_cos_diff));
-
-		hn::Store(v_rotated_real, d, section->freqFftReal.data() + i);
-		hn::Store(v_rotated_imag, d, section->freqFftImag.data() + i);
-	}
-
-	// recombine real and imaginary parts of rotated bins back into complex numbers for final output
-	for (size_t i = 0; i < fftSize; ++i)
-	{
-		section->freqFftData[i] = {section->freqFftReal[i], section->freqFftImag[i]};
-	}
-}
-
-
-// NOLINTNEXTLINE(google-readability-namespace-comments)
-}  // namespace HWY_NAMESPACE
-}  // namespace
-
-
-HWY_AFTER_NAMESPACE();
-
-// The table of pointers to the various implementations in HWY_NAMESPACE must
-// be compiled only once (foreach_target #includes this file multiple times).
-// HWY_ONCE is true for only one of these 'compilation passes'.
-#if HWY_ONCE
-
-namespace pitch_functions
-{
-	// This macro declares a static array used for dynamic dispatch; it resides in
-	// the same outer namespace that contains FloorLog2.
-	HWY_EXPORT(HwyPhaseCorrect);
-
-
-	HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs *  HWY_RESTRICT args)
-	{
-		const auto ptr = HWY_DYNAMIC_POINTER(HwyPhaseCorrect);
-		return ptr(args);
-	}
-}
-
-#endif // HWY_ONCE
