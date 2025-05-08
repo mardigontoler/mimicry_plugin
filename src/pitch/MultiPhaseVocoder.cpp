@@ -81,6 +81,7 @@ void MultiPhaseVocoder::pushSample(float sample) noexcept {
 			auto secOutputDataSz = section.outputData.size();
 
 			phaseCorrectSIMD(section); // mutates freqFftData to
+			// phaseCorrect(section); // mutates freqFftData to
 
 			if(!juce::approximatelyEqual(section.factor, 1.0f)) { // pitch shift
 
