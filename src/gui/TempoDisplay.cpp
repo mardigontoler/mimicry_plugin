@@ -1,9 +1,11 @@
 
 #include "TempoDisplay.h"
 
+#include "public.sdk/source/vst/moduleinfo/jsoncxx.h"
 
 
-TempoDisplay::TempoDisplay()
+TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
+	: mValueTreeState(vts)
 {
 	tempoLabel.setText("120", juce::NotificationType::dontSendNotification);
 	glowLabel.setText("120", juce::NotificationType::dontSendNotification);
@@ -16,11 +18,13 @@ TempoDisplay::TempoDisplay()
 //	addAndMakeVisible(glowLabel, 1);
 }
 
+
 void TempoDisplay::paint(juce::Graphics&g)
 {
 	g.setColour(getLookAndFeel().findColour(juce::Label::backgroundColourId));
 	g.fillRoundedRectangle(getLocalBounds().toFloat(), 5);
 }
+
 
 void TempoDisplay::resized()
 {
@@ -46,11 +50,65 @@ void TempoDisplay::resized()
 }
 
 
+void TempoDisplay::SetText(juce::String text)
+{
+	using namespace juce;
+
+	mText = text;
+	tempoLabel.setText(mText, dontSendNotification);
+	glowLabel.setText(mText, dontSendNotification);
+	repaint();
+}
+
+
 void TempoDisplay::sliderValueChanged(juce::Slider* slider)
 {
 	using namespace juce;
-	const auto tempo = static_cast<int>(slider->getValue());
-	const auto str = String(tempo);
-	tempoLabel.setText(str, dontSendNotification);
-	glowLabel.setText(str, dontSendNotification);
+
+	if ( ! mSyncActive)
+	{
+		const auto tempo = static_cast<int>(slider->getValue());
+		const auto str = String(tempo);
+		SetText(str);
+	}
+}
+
+
+void TempoDisplay::SetSyncActive(const bool syncActive)
+{
+	using namespace juce;
+	mSyncActive = syncActive;
+	if (mSyncActive)
+	{
+		const String str{"snc"};
+		SetText(str);
+	}
+	else
+	{
+		const auto tempoSyncParam = mValueTreeState->getParameter("bpm");
+		const String str{tempoSyncParam->getCurrentValueAsText()};
+		SetText(str);
+	}
+	repaint();
+}
+
+
+void TempoDisplay::parameterChanged(const juce::String& parameterID, const float newValue)
+{
+	using namespace juce;
+
+	if (parameterID == "tempoSync")
+	{
+		const bool active{newValue > 0.5f};
+		SetSyncActive(active);
+	}
+	if (parameterID == "bpm")
+	{
+		if (! mSyncActive)
+		{
+			const auto tempoSyncParam = mValueTreeState->getParameter("bpm");
+			const String str{tempoSyncParam->getCurrentValueAsText()};
+			SetText(str);
+		}
+	}
 }

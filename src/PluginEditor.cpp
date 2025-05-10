@@ -11,7 +11,7 @@ using namespace mimicry;
 
 //==============================================================================
 MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), tempoDisplay(&vts)
 
 {
 
@@ -95,12 +95,17 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
     setResizable(false, false);
     setBounds(getLocalBounds());
 
+    valueTreeState.addParameterListener("tempoSync", &tempoDisplay);
+
 }
+
 
 MimicAudioProcessorEditor::~MimicAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
+    valueTreeState.removeParameterListener("tempoSync", &tempoDisplay);
 }
+
 
 //==============================================================================
 void MimicAudioProcessorEditor::paint (juce::Graphics& g)

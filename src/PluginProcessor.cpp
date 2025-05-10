@@ -35,6 +35,7 @@ MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
     }
 }
 
+
 MimicAudioProcessor::~MimicAudioProcessor()
 = default;
 
@@ -211,14 +212,15 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     const float mix = *mixParam;
     const double sampleRate = getSampleRate();
 
-    double bpm = *bpmRawParam;
+    const double bpmParamVal = *bpmRawParam;
 
+    double bpm = bpmParamVal;
 
     if (tempoSync) {
 
         std::optional<double> bpmFromPlayhead = std::nullopt;
 
-        if (AudioPlayHead* playHead = getPlayHead(); playHead != nullptr) {
+        if (const AudioPlayHead* playHead = getPlayHead(); playHead != nullptr) {
             if (auto optPlayheadPosition = playHead->getPosition(); optPlayheadPosition.hasValue())
             {
                 if (auto optPlayheadBpm = optPlayheadPosition->getBpm(); optPlayheadBpm.hasValue())
@@ -237,9 +239,6 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
         {
             bpm = 120.0f; // default if trying to sync in a host that doesn't support it
         }
-
-        bpmAudioParam->setValueNotifyingHost(static_cast<float>(bpm / MAX_TEMPO));
-
     }
 
     const float beatDivider = *divisionParam;
@@ -327,8 +326,8 @@ std::unique_ptr<XmlElement> MimicAudioProcessor::getStateXML() {
     std::unique_ptr<XmlElement> xmlState(state.createXml());
     xmlState->setAttribute("version", 1);
     #if JUCE_DEBUG
-    DBG("serializing state");
-    DBG(xmlState->toString());
+    // DBG("serializing state");
+    // DBG(xmlState->toString());
     #endif
     return xmlState;
 }
@@ -346,8 +345,8 @@ void MimicAudioProcessor::setStateInformation (const void* data, int sizeInBytes
     // host calls this to load state
     std::unique_ptr<XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
     #if JUCE_DEBUG
-    DBG("loading state");
-    DBG(xmlState->toString());
+    // DBG("loading state");
+    // DBG(xmlState->toString());
     #endif
     if (xmlState != nullptr)
         if (xmlState->hasTagName(parameters.state.getType())) {
