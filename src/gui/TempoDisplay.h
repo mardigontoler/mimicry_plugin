@@ -21,7 +21,7 @@ public:
 
     void sliderValueChanged(juce::Slider* slider) override;
 
-    void SetSyncActive(bool syncActive);
+    void TempoSyncChanged(bool syncActive);
 
     void parameterChanged(const juce::String&parameterID, float newValue) override;
 

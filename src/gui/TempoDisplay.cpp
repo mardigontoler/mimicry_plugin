@@ -11,8 +11,8 @@ TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
 	glowLabel.setText("120", juce::NotificationType::dontSendNotification);
 	tempoLabel.setJustificationType(juce::Justification::right);
 	glowLabel.setJustificationType(juce::Justification::right);
-	tempoLabel.setMinimumHorizontalScale(1.0f);
-	glowLabel.setMinimumHorizontalScale(1.0f);
+	tempoLabel.setMinimumHorizontalScale(0.0f);
+	glowLabel.setMinimumHorizontalScale(0.0f);
 
 	addAndMakeVisible(tempoLabel);
 //	addAndMakeVisible(glowLabel, 1);
@@ -74,7 +74,7 @@ void TempoDisplay::sliderValueChanged(juce::Slider* slider)
 }
 
 
-void TempoDisplay::SetSyncActive(const bool syncActive)
+void TempoDisplay::TempoSyncChanged(const bool syncActive)
 {
 	using namespace juce;
 	mSyncActive = syncActive;
@@ -85,8 +85,17 @@ void TempoDisplay::SetSyncActive(const bool syncActive)
 	}
 	else
 	{
+#if JUCE_DEBUG
+		auto xml = mValueTreeState->state.createXml();
+		// DBG(xml->toString());
+#endif
 		const auto tempoSyncParam = mValueTreeState->getParameter("bpm");
-		const String str{tempoSyncParam->getCurrentValueAsText()};
+		DBG(tempoSyncParam->getLabel());
+		DBG(tempoSyncParam->getName(100));
+		DBG(tempoSyncParam->getValue());
+		const auto newValue = tempoSyncParam->getNormalisableRange().convertFrom0to1(tempoSyncParam->getValue());
+		const auto truncValue = static_cast<int>(newValue);
+		const String str{truncValue};
 		SetText(str);
 	}
 	repaint();
@@ -100,14 +109,14 @@ void TempoDisplay::parameterChanged(const juce::String& parameterID, const float
 	if (parameterID == "tempoSync")
 	{
 		const bool active{newValue > 0.5f};
-		SetSyncActive(active);
+		TempoSyncChanged(active);
 	}
 	if (parameterID == "bpm")
 	{
 		if (! mSyncActive)
 		{
-			const auto tempoSyncParam = mValueTreeState->getParameter("bpm");
-			const String str{tempoSyncParam->getCurrentValueAsText()};
+			const auto truncValue = static_cast<int>(newValue);
+			const String str{truncValue};
 			SetText(str);
 		}
 	}
