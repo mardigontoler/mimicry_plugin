@@ -85,14 +85,7 @@ void TempoDisplay::TempoSyncChanged(const bool syncActive)
 	}
 	else
 	{
-#if JUCE_DEBUG
-		auto xml = mValueTreeState->state.createXml();
-		// DBG(xml->toString());
-#endif
 		const auto tempoSyncParam = mValueTreeState->getParameter("bpm");
-		DBG(tempoSyncParam->getLabel());
-		DBG(tempoSyncParam->getName(100));
-		DBG(tempoSyncParam->getValue());
 		const auto newValue = tempoSyncParam->getNormalisableRange().convertFrom0to1(tempoSyncParam->getValue());
 		const auto truncValue = static_cast<int>(newValue);
 		const String str{truncValue};
