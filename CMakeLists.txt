@@ -25,9 +25,15 @@ endif()
 if ( NOT APPLE)
     message("Finding Intel MKL")
     set(MKL_LINK "static")
-    find_package(MKL CONFIG REQUIRED MKL_LINK=static)
+
+    # This is needed to prevent a runtime dependency on a threading library like libopenmp5  that would prevent the plugin
+    # from loading on systems without it installed
+    set(MKL_THREADING "sequential")
+
+    find_package(MKL CONFIG REQUIRED)
     message(STATUS "${MKL_IMPORTED_TARGETS}") #Provides available list of targets based on input
 endif()
+
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     message(STATUS "Enabling parallel builds for MSVC")
@@ -156,7 +162,7 @@ target_link_libraries(mimicry
 
 if ( NOT APPLE)
     target_link_libraries(mimicry
-        PUBLIC
+        PRIVATE
             MKL::MKL
     )
 endif()
