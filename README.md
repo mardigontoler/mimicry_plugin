@@ -28,7 +28,7 @@ that runs the `/opt/intel/oneapi/setvars.sh` environment file.
 Then, build configurations can be set to use this toolchain.
 
 JUCE and Highway are included as git submodules. 
-You can pudate them with
+You can pull them with
 `git submodule update --init`
 
 
