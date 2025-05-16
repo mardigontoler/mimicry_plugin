@@ -5,8 +5,10 @@
 
 using namespace juce;
 
-DelayHeadController::DelayHeadController()
+DelayHeadController::DelayHeadController(juce::String label)
 {
+	indexLabel.setText(label, dontSendNotification);
+
 	delayGainSlider.setSliderStyle(Slider::SliderStyle::Rotary);
 	delayGainSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
 
@@ -17,6 +19,7 @@ DelayHeadController::DelayHeadController()
 	feedbackKnob.setSliderStyle(Slider::SliderStyle::Rotary);
 	feedbackKnob.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
 
+	addAndMakeVisible(&indexLabel);
 	addAndMakeVisible(&delayGainSlider);
 	addAndMakeVisible(&semitonesKnob);
 	addAndMakeVisible(&feedbackKnob);
@@ -50,15 +53,15 @@ void DelayHeadController::resized()
 {
 	Rectangle<int> area = getLocalBounds();
 
-	int height = area.getHeight();
-	int width = area.getWidth();
+	const auto labelArea = area.removeFromTop(indexLabel.getFont().getHeight() + 4);
+	indexLabel.setBounds(labelArea);
 
-	auto potHeight = height / 3;
+	const auto potHeight = area.getHeight() / 3;
 
-	auto gainArea = area.removeFromTop(potHeight);
+	const auto gainArea = area.removeFromTop(potHeight);
 	delayGainSlider.setBounds(gainArea);
 
-	auto feedbackArea = area.removeFromTop(potHeight);
+	const auto feedbackArea = area.removeFromTop(potHeight);
 	feedbackKnob.setBounds(feedbackArea);
 
 	semitonesKnob.setBounds(area);

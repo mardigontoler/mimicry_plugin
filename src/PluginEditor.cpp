@@ -69,10 +69,11 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
 
     setLookAndFeel(&mimicryLookAndFeel);
     for (int i = 0; i < numStereoDelayLines; i++) {
-        delayHeadControllers.add(new DelayHeadController());
-        String delayGainParamString = String("rhythmGain") + String(i);
-        String semitoneParamString = String("pitchShift") + String(i);
-		String feedbackParamString = String("feedback") + String(i);
+        const String iStr{i};
+        delayHeadControllers.add(new DelayHeadController(iStr));
+        String delayGainParamString = String("rhythmGain") + iStr;
+        String semitoneParamString = String("pitchShift") + iStr;
+		String feedbackParamString = String("feedback") + iStr;
 
         DelayHeadController* controller = delayHeadControllers.getLast();
         controller->resetDelayGainAttachment(valueTreeState, delayGainParamString);

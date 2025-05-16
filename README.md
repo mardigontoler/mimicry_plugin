@@ -55,5 +55,5 @@ cmake .. -G Ninja
 
 Then build with
 ```bash
-cmake --build .
+cmake --build . -t mimicry_VST3
 ```
