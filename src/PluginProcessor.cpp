@@ -171,7 +171,11 @@ void MimicAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 		delay.setMaximumDelayInSamples(static_cast<int>(mMaxDelayLengthInSamples));
 	}
 
-    delayLineSamples = std::vector<std::vector<float>>(numStereoDelayLines, std::vector<float>(samplesPerBlock, 0));
+    delayLineSamples = std::vector<std::vector<float>>(
+			numStereoDelayLines,
+			std::vector<float>(
+					static_cast<size_t>(samplesPerBlock),
+					0));
 }
 
 void MimicAudioProcessor::releaseResources()
@@ -202,7 +206,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
     ScopedNoDenormals noDenormals;
     const auto totalNumInputChannels  = getTotalNumInputChannels();
     const auto totalNumOutputChannels = getTotalNumOutputChannels();
-    const auto bufferSize = ioAudioBuffer.getNumSamples();
+    const auto bufferSize = static_cast<size_t>(ioAudioBuffer.getNumSamples());
 
     static int blockCounter = -1;
     blockCounter = (blockCounter + 1) % 100;
@@ -267,12 +271,11 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
     }
 
 
-
     for (auto channel = 0; channel < totalNumInputChannels; channel++) {
         if (channel == 0) { // limit to mono
             for (size_t i = 0; i < bufferSize; i++) {
 
-                const float rawInputSample = ioAudioBuffer.getSample(channel, i);
+                const float rawInputSample = ioAudioBuffer.getSample(channel, static_cast<int>(i));
 
                 // feedback delay line
                 float inputWithFeedback = rawInputSample;
@@ -304,7 +307,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
                 }
 
                 const float mixedSample = ((1 - mix) * inputWithFeedback) + (mix * summedDelayLinesSample);
-                ioAudioBuffer.setSample(channel, i, mixedSample);
+                ioAudioBuffer.setSample(channel, static_cast<int>(i), mixedSample);
             }
         }
         else {
