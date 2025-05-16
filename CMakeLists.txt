@@ -12,6 +12,9 @@ if (APPLE)
     set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=RelWithDebInfo] "dwarf-with-dsym")
 endif()
 
+# Control whether the CTest module invokes enable_testing().
+# Set to false here to prevent numerous unneeded ctest targets from being created when including google highway later
+set(BUILD_TESTING OFF CACHE BOOL "Disable CTest testing")
 
 set( PROFILE_BUILD OFF CACHE BOOL "Pass -O0 for profiling debug builds on linux with optimizations" )
 
@@ -95,8 +98,10 @@ set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
 message("JUCE_PATH=${JUCE_PATH}")
 add_subdirectory(${JUCE_PATH} build_juce)
 
-set(HWY_ENABLE_TESTS OFF)
-set(HWY_ENABLE_INSTALL OFF)
+set(HWY_ENABLE_CONTRIB OFF CACHE BOOL "Include contrib/")
+set(HWY_ENABLE_EXAMPLES OFF CACHE BOOL "Build examples")
+set(HWY_ENABLE_INSTALL OFF CACHE BOOL "Install library")
+set(HWY_ENABLE_TESTS OFF CACHE BOOL "Enable HWY tests")
 add_subdirectory(highway build_highway)
 
 
