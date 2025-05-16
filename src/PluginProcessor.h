@@ -78,10 +78,12 @@ private:
 
     // array of atomic pointers to delay and pitch shift params
     std::vector<std::atomic<float>*> delayGainParams;
-    std::vector<std::atomic<float>*> semitoneParams; // value tree will give us float even for int parameters
+    std::vector<std::atomic<float>*> semitoneParams; // valuetree will give us float even for int parameters
 	std::vector<std::atomic<float>*> feedbackParams;
 
 	std::array<float, mimicry::numStereoDelayLines> nextDelayLineSamples{};
+
+    std::vector<std::vector<float>> delayLineSamples; // buffer for delay line samples being processed in the current block
 
 
 	juce::RangedAudioParameter* bpmAudioParam; // so we can set this param internally

@@ -166,12 +166,12 @@ void MimicAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 	for (auto& delay : mDelayLines)
 	{
 		delay.reset();
-		juce::dsp::ProcessSpec spec{sampleRate, static_cast<uint32>(samplesPerBlock), 1};
+		dsp::ProcessSpec spec{sampleRate, static_cast<uint32>(samplesPerBlock), 1};
 		delay.prepare(spec);
 		delay.setMaximumDelayInSamples(static_cast<int>(mMaxDelayLengthInSamples));
 	}
 
-    //stereoDelayLines[3].setEnabled(true);
+    delayLineSamples = std::vector<std::vector<float>>(numStereoDelayLines, std::vector<float>(samplesPerBlock, 0));
 }
 
 void MimicAudioProcessor::releaseResources()
@@ -267,11 +267,24 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& inputBuffer, MidiBuf
     }
 
 
+
     for (auto channel = 0; channel < totalNumInputChannels; channel++) {
         if (channel == 0) { // limit to mono
             for (auto i = 0; i < bufferSize; i++) {
-                const float inputSample = inputBuffer.getSample(channel, i);
-				pitchShifters.pushSample(inputSample);
+
+                const float rawInputSample = inputBuffer.getSample(channel, i);
+
+                // feedback delay line
+                float inputWithFeedback = rawInputSample;
+                for (size_t headIndex = 0; headIndex < mDelayLines.size(); headIndex++)
+                {
+                    auto& delay = mDelayLines[headIndex];
+                    const auto delayLineSample = delay.popSample(channel);
+                    delayLineSamples[headIndex][i] = delayLineSample;
+                    inputWithFeedback += delayLineSample * *(feedbackParams[headIndex]);
+                }
+
+				pitchShifters.pushSample(inputWithFeedback);
 
                 float summedDelayLinesSample = 0;
                 for (size_t headIndex = 0; headIndex < mDelayLines.size(); headIndex++)
@@ -281,17 +294,16 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& inputBuffer, MidiBuf
 
 					const auto nextPitchShifterSample = pitchShifters.nextSample(headIndex);
 
-					constexpr int delayChannel = 0; // mono
-					delay.pushSample(delayChannel, nextPitchShifterSample);
+					delay.pushSample(channel, nextPitchShifterSample);
 
-					auto delayedSample = delay.popSample(delayChannel);
+					auto delayedSample = delayLineSamples[headIndex][i];
 					const float gain = *(delayGainParams[headIndex]);
 					delayedSample *= gain;
 
 					summedDelayLinesSample += delayedSample;
                 }
 
-                const float mixedSample = ((1 - mix) * inputSample) + (mix * summedDelayLinesSample);
+                const float mixedSample = ((1 - mix) * inputWithFeedback) + (mix * summedDelayLinesSample);
                 inputBuffer.setSample(channel, i, mixedSample);
             }
         }
