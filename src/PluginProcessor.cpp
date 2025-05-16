@@ -197,12 +197,12 @@ bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
 
 
 
-void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& /*midiMessages*/)
+void MimicAudioProcessor::processBlock (AudioBuffer<float>& inputBuffer, MidiBuffer& /*midiMessages*/)
 {
     ScopedNoDenormals noDenormals;
     const auto totalNumInputChannels  = getTotalNumInputChannels();
     const auto totalNumOutputChannels = getTotalNumOutputChannels();
-    const auto bufferSize = buffer.getNumSamples();
+    const auto bufferSize = inputBuffer.getNumSamples();
 
     static int blockCounter = -1;
     blockCounter = (blockCounter + 1) % 100;
@@ -270,7 +270,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     for (auto channel = 0; channel < totalNumInputChannels; channel++) {
         if (channel == 0) { // limit to mono
             for (auto i = 0; i < bufferSize; i++) {
-                const float inputSample = buffer.getSample(channel, i);
+                const float inputSample = inputBuffer.getSample(channel, i);
 				pitchShifters.pushSample(inputSample);
 
                 float summedDelayLinesSample = 0;
@@ -292,7 +292,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
                 }
 
                 const float mixedSample = ((1 - mix) * inputSample) + (mix * summedDelayLinesSample);
-                buffer.setSample(channel, i, mixedSample);
+                inputBuffer.setSample(channel, i, mixedSample);
             }
         }
         else {
@@ -301,7 +301,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
     }
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        inputBuffer.clear (i, 0, inputBuffer.getNumSamples());
 
 }
 
