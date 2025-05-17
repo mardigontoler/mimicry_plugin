@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "gui/colors.h"
 
 #include <memory>
 
@@ -15,16 +16,10 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
 
 {
 
-    titleLabel.setText("Mimicry", NotificationType::dontSendNotification);
+    titleLabel.setText("mimicry", NotificationType::dontSendNotification);
     titleLabel.setLookAndFeel(&titleLookAndFeel);
-    titleLabel.setJustificationType(Justification::centred);
+    titleLabel.setJustificationType(Justification::right);
     addAndMakeVisible(titleLabel);
-//
-//    subTitleLabel.setText("Delay and Arpeggio", NotificationType::dontSendNotification);
-//    subTitleLabel.setJustificationType(Justification::centred);
-//    subTitleLabel.setLookAndFeel(&subTitleLookAndFeel);
-//    addAndMakeVisible(subTitleLabel);
-
 
     tempoLabel.setText("Tempo", NotificationType::dontSendNotification);
     tempoLabel.setJustificationType(Justification::centred);
@@ -93,10 +88,10 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (742, 560);
-    setResizable(false, false);
-    setBounds(getLocalBounds());
+	setResizable(true, true);
+	setBounds(getLocalBounds());
 
-    valueTreeState.addParameterListener("tempoSync", &tempoDisplay);
+	valueTreeState.addParameterListener("tempoSync", &tempoDisplay);
 
 }
 
@@ -112,12 +107,47 @@ MimicAudioProcessorEditor::~MimicAudioProcessorEditor()
 void MimicAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+//    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
-    // draw rectangles with margins for the left area and the delay lines area
-    g.setColour(Colour::fromRGB(27,27,28));
-    g.fillRoundedRectangle(leftArea.reduced(10).toFloat(), 10.0f);
-    g.fillRoundedRectangle(delayHeadsArea.reduced(5).toFloat(), 10.0f);
+	auto bounds = getLocalBounds().toFloat();
+
+	// Base gradient
+	juce::ColourGradient baseGradient(
+			juce::Colour(mimicry::Colors::getBgGradientCol1()),
+			bounds.getTopLeft(),
+			juce::Colour(mimicry::Colors::getBgGradientCol2()),
+			bounds.getBottomRight(),
+			false
+	);
+
+	// Add multiple intermediate stops for smoother transition
+	for (float i = 0.2f; i < 1.0f; i += 0.2f)
+	{
+		baseGradient.addColour(i, baseGradient.getColourAtPosition(i - 0.1f)
+				.interpolatedWith(baseGradient.getColourAtPosition(i + 0.1f), 0.5f));
+	}
+
+	g.setGradientFill(baseGradient);
+	g.fillRect(bounds);
+
+	// Overlay gradients with slight offsets and low opacity
+	for (int i = 0; i < 3; ++i)
+	{
+		float offset = static_cast<float>(i + 1) * 30;
+
+		juce::ColourGradient overlayGradient(
+				juce::Colour(mimicry::Colors::getBgGradientCol1()).withAlpha(0.3f),
+				bounds.getTopLeft().translated(offset, offset),
+				juce::Colour(mimicry::Colors::getBgGradientCol2()).withAlpha(0.3f),
+				bounds.getBottomRight().translated(-offset, -offset),
+				false
+		);
+
+		g.setGradientFill(overlayGradient);
+		g.fillRect(bounds);
+	}
+
+
 }
 
 void MimicAudioProcessorEditor::resized()
