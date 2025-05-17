@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "delay/MultiHeadDelayLine.h"
 #include "juce_audio_processors/juce_audio_processors.h"
 #include "pitch/MultiPhaseVocoder.h"
 

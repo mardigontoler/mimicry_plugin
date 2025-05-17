@@ -62,10 +62,8 @@ private:
     juce::Slider divisionKnob;
     std::unique_ptr<SliderAttachment> divisionKnobAttachment;
 
-    
     juce::TextButton tempoSyncBtn;
     std::unique_ptr<ButtonAttachment> tempoSyncBtnAttachment;
-
 
     // areas to place components
     juce::Rectangle<int> area;
@@ -86,5 +84,5 @@ private:
     juce::OwnedArray<SliderAttachment> rhythmSliderAttachments;
 
     //========================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MimicAudioProcessorEditor);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MimicAudioProcessorEditor)
 };

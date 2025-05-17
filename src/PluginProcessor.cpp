@@ -212,7 +212,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
     blockCounter = (blockCounter + 1) % 100;
     const bool timedDebug = blockCounter == 0;
 
-    const bool tempoSync = *tempoSyncParam != 0.0f;
+	const bool tempoSync = *tempoSyncParam > 0.5f;
     const float mix = *mixParam;
     const double sampleRate = getSampleRate();
 
@@ -224,8 +224,8 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
 
         std::optional<double> bpmFromPlayhead = std::nullopt;
 
-        if (const AudioPlayHead* playHead = getPlayHead(); playHead != nullptr) {
-            if (auto optPlayheadPosition = playHead->getPosition(); optPlayheadPosition.hasValue())
+        if (const AudioPlayHead* audioPlayHead = getPlayHead(); audioPlayHead != nullptr) {
+            if (auto optPlayheadPosition = audioPlayHead->getPosition(); optPlayheadPosition.hasValue())
             {
                 if (auto optPlayheadBpm = optPlayheadPosition->getBpm(); optPlayheadBpm.hasValue())
                 {

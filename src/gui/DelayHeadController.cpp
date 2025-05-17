@@ -5,8 +5,12 @@
 
 using namespace juce;
 
+
+
 DelayHeadController::DelayHeadController(juce::String label)
 {
+	constexpr int semitonesTextboxHeight = 15;
+
 	indexLabel.setText(label, dontSendNotification);
 
 	delayGainSlider.setSliderStyle(Slider::SliderStyle::Rotary);
@@ -71,6 +75,8 @@ void DelayHeadController::resized()
 void DelayHeadController::paint(Graphics &g)
 {
 	Component::paint(g);
+
+
 
 	g.setColour(getLookAndFeel().findColour(juce::Label::backgroundColourId));
 	g.fillRoundedRectangle(getLocalBounds().toFloat(), 1);

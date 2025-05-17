@@ -1,8 +1,6 @@
 
 #include "TempoDisplay.h"
 
-#include "public.sdk/source/vst/moduleinfo/jsoncxx.h"
-
 
 TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
 	: mValueTreeState(vts)

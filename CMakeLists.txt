@@ -3,6 +3,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+include(systematize)
 
 if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
@@ -136,8 +139,8 @@ target_sources(mimicry PRIVATE
     src/PluginProcessor.cpp
     src/PluginEditor.h
     src/PluginEditor.cpp
-    src/delay/MultiHeadDelayLine.h
-    src/delay/StereoMultiHeadDelayLine.h
+#    src/delay/MultiHeadDelayLine.h
+#    src/delay/StereoMultiHeadDelayLine.h
     src/gui/title/TitleLookAndFeel.h
     src/gui/DelayControllerLookAndFeel.h
     src/gui/DelayHeadController.cpp
@@ -184,7 +187,10 @@ target_include_directories(mimicry
     PRIVATE
     src/
     src/pitch
-
+)
+target_include_directories(mimicry
+    SYSTEM PRIVATE
+    highway/hwy
 )
 
 
@@ -206,3 +212,43 @@ target_include_directories(benchmark_phase_correct
 target_compile_definitions(benchmark_phase_correct PRIVATE
     JUCE_WEB_BROWSER=0
 )
+
+function(resolve_alias_target output_var target_name)
+    if(NOT TARGET "${target_name}")
+        set(${output_var} "${target_name}" PARENT_SCOPE)
+        return()
+    endif()
+
+    get_target_property(alias_target "${target_name}" ALIASED_TARGET)
+    if(alias_target)
+        set(${output_var} "${alias_target}" PARENT_SCOPE)
+    else()
+        set(${output_var} "${target_name}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# suppress warnings when building thirdarty libs
+set(THIRDPARTY_TARGETS
+    hwy
+    juce::juce_audio_basics
+    juce::juce_audio_devices
+    juce::juce_audio_formats
+    juce::juce_audio_plugin_client
+    juce::juce_audio_processors
+    juce::juce_audio_utils
+    juce::juce_core
+    juce::juce_data_structures
+    juce::juce_events
+    juce::juce_graphics
+    juce::juce_gui_basics
+    juce::juce_gui_extra
+)
+foreach(TARGET ${THIRDPARTY_TARGETS})
+    if(TARGET ${TARGET})
+        resolve_alias_target(actual_target "${TARGET}")
+#        target_compile_options(${actual_target} PRIVATE "-w")
+        systematize(${actual_target})
+
+    endif()
+endforeach()
+

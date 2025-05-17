@@ -9,9 +9,9 @@
 class TitleLookAndFeel: public juce::LookAndFeel_V4 {
 
 
-    juce::Font getLabelFont(juce::Label& label) override
+    juce::Font getLabelFont(juce::Label& /*label*/) override
     {
-        return mimicry::getHeaderFont(50);
+        return mimicry::Fonts::getNormalFont(50);
     }
 
 };
@@ -19,8 +19,8 @@ class TitleLookAndFeel: public juce::LookAndFeel_V4 {
 
 class SubTitleLookAndFeel : public mimicry::MimicryLookAndFeel {
 
-    juce::Font getLabelFont(juce::Label& label) override
+    juce::Font getLabelFont(juce::Label& /*label*/) override
     {
-        return mimicry::getNormalFont(12);
+        return mimicry::Fonts::getNormalFont(12);
     }
 };

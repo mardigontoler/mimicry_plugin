@@ -16,15 +16,15 @@ mimicry::MimicryLookAndFeel::MimicryLookAndFeel()
 	setColour(Slider::thumbColourId, Colour::fromRGB(30,142,177));
 }
 
-Font mimicry::MimicryLookAndFeel::getLabelFont(Label&label)
+Font mimicry::MimicryLookAndFeel::getLabelFont(Label& /*label*/)
 {
-	return getNormalFont(15);
+	return Fonts::getNormalFont(15);
 }
 
 void mimicry::MimicryLookAndFeel::drawTickBox(
 	Graphics& g, Component& component,
 	float x, float y, float w, float h,
-	bool ticked, bool isEnabled, bool isMouseOverButton, bool isButtonDown)
+	bool ticked, bool isEnabled, bool /*isMouseOverButton*/, bool /*isButtonDown*/)
 {
 	const auto boxSize = w * 0.7f;
 

@@ -1,11 +1,6 @@
 
 #include "pitch_functions.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "modernize-concat-nested-namespaces"
-
 // First undef to prevent error when re-included.
 #undef HWY_TARGET_INCLUDE
 // For dynamic dispatch, specify the name of the current file (unfortunately
@@ -127,7 +122,7 @@ namespace HWY_NAMESPACE
 
 		auto& fftSize = PV::PvConstants::FFT_SIZE;
 
-		auto& section = args->outputSection;
+		auto& section = args->mOutputSection;
 
 		constexpr auto analysisHopSizeF = static_cast<float>(PV::PvConstants::analysisHopSize);
 		const auto synthesisHopSizeF = static_cast<float>(section->synthesisHopSize);
@@ -157,7 +152,7 @@ namespace HWY_NAMESPACE
 		for(size_t i = 0 ; i < fftSize; i += N) {
 
 			auto v_input_phase = hn::Load(d, section->freqFftArgs.data() + i);
-			auto v_omega = hn::Load(d, args->omegas + i);
+			auto v_omega = hn::Load(d, args->mOmegas + i);
 			auto v_old_input_phase = Load(d, section->oldInputPhases.data() + i);
 
 			auto v_hop_omega = hn::Mul(v_analysis_hop, v_omega);

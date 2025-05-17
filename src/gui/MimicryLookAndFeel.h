@@ -48,17 +48,17 @@ namespace mimicry {
             bool isButtonDown) override;
 
 
-        int getSliderThumbRadius(juce::Slider& slider) override{
+        int getSliderThumbRadius(juce::Slider& /*slider*/) override{
             return thumbRadius;
         }
 
-        void setThumbRadius(int radius){
-            thumbRadius = radius;
-        }
+//        void setThumbRadius(int radius){
+//            thumbRadius = radius;
+//        }
 
 
         void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height,
-                float sliderPos, float minSliderPos, float maxSliderPos,
+                float sliderPos, float /*minSliderPos*/, float /*maxSliderPos*/,
                 const juce::Slider::SliderStyle style, juce::Slider& slider) override
         {
 
@@ -66,12 +66,12 @@ namespace mimicry {
             float thumbThickness = 13.0f;
             float trackThickness = 5.0f;
 
-            auto centreX = x + width * 0.5f;
-            auto centreY = y + height * 0.5f;
+            auto centreX = static_cast<float>(x) + static_cast<float>(width) * 0.5f;
+//            auto centreY = static_cast<float>(y) + static_cast<float>(height) * 0.5f;
 
             if (style == juce::Slider::LinearVertical) {
                 // draw the slider track
-                juce::Rectangle<float> r(centreX - (trackThickness / 2.0f), y, trackThickness, height);
+                juce::Rectangle<float> r(centreX - (trackThickness / 2.0f), static_cast<float>(y), trackThickness, static_cast<float>(height));
                 g.setColour(slider.findColour(juce::Slider::backgroundColourId));
                 g.drawRoundedRectangle(r, 4.0f, trackThickness);
 
@@ -107,25 +107,25 @@ namespace mimicry {
             float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override
         {
             using namespace juce;
-            auto diameter = jmin(width, height) - 4.0f;
+            auto diameter = static_cast<float>(jmin(width, height)) - 4.0f;
             auto radius = (diameter / 2.0f) * std::cos(MathConstants<float>::pi / 4.0f);
-            auto centreX = x + width * 0.5f;
-            auto centreY = y + height * 0.5f;
+            auto centreX = static_cast<float>(x) + static_cast<float>(width) * 0.5f;
+            auto centreY = static_cast<float>(y) + static_cast<float>(height) * 0.5f;
             auto rx = centreX - radius;
             auto ry = centreY - radius;
             auto rw = radius * 2.0f;
             auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
-            bool isMouseOver = slider.isMouseOverOrDragging() && slider.isEnabled();
+//            bool isMouseOver = slider.isMouseOverOrDragging() && slider.isEnabled();
 
-            auto baseColour = slider.isEnabled() ? slider.findColour(Slider::rotarySliderFillColourId).withAlpha(isMouseOver ? 0.8f : 1.0f)
-                : Colour(0x80808080);
+//            auto baseColour = slider.isEnabled() ? slider.findColour(Slider::rotarySliderFillColourId).withAlpha(isMouseOver ? 0.8f : 1.0f)
+//                : Colour(0x80808080);
 
             Rectangle<float> r(rx, ry, rw, rw);
 
-            auto x1 = r.getTopLeft().getX();
-            auto y1 = r.getTopLeft().getY();
-            auto x2 = r.getBottomLeft().getX();
-            auto y2 = r.getBottomLeft().getY();
+//            auto x1 = r.getTopLeft().getX();
+//            auto y1 = r.getTopLeft().getY();
+//            auto x2 = r.getBottomLeft().getX();
+//            auto y2 = r.getBottomLeft().getY();
 
             // draw background circle
             g.setColour(slider.findColour(Slider::rotarySliderFillColourId));
@@ -133,11 +133,11 @@ namespace mimicry {
 
             // draw the outline and needle
             g.setColour(slider.findColour(Slider::rotarySliderOutlineColourId));
-            g.drawEllipse(r, 3);
+            g.drawEllipse(r, 3.0f);
 
             Path needle;
             auto r2 = r * 0.3f;
-            r2.setWidth(4);
+            r2.setWidth(4.0f);
             needle.addRoundedRectangle(r2.withPosition({ r.getCentreX() - (r2.getWidth() / 2.0f), r.getY() }), 2.0f);
 
             g.setColour(slider.findColour(Slider::rotarySliderOutlineColourId));
@@ -161,7 +161,7 @@ namespace mimicry {
                 auto textArea = getLabelBorderSize(label).subtractedFrom(label.getLocalBounds());
 
                 g.drawFittedText(label.getText(), textArea, label.getJustificationType(),
-                    jmax(1, (int)(textArea.getHeight() / font.getHeight())),
+                    jmax(1, static_cast<int>(textArea.getHeight() / font.getHeight())),
                     label.getMinimumHorizontalScale());
 
                 g.setColour(label.findColour(Label::outlineColourId).withMultipliedAlpha(alpha));

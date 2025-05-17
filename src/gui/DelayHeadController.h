@@ -32,8 +32,6 @@ public:
 
 private:
 
-    int semitonesKnobSpace = 65;
-    int semitonesTextboxHeight = 15;
     juce::Slider delayGainSlider;
     juce::Slider semitonesKnob;
 	juce::Slider feedbackKnob;

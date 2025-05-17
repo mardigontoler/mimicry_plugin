@@ -7,9 +7,9 @@
 namespace mimicry
 {
 	class DigitalLookAndFeel : public MimicryLookAndFeel {
-		juce::Font getLabelFont(juce::Label &label) override
+		juce::Font getLabelFont(juce::Label & /*label*/) override
 		{
-			return getSegmentFont(50);
+			return Fonts::getSegmentFont(50);
 		}
 
 	public:

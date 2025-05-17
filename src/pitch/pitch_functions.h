@@ -14,14 +14,14 @@ namespace pitch_functions {
 
 		PhaseCorrectArgs(PV::MultiPhaseVocoder::OutputSection *outputsection, float *omegas,
 						 const PV::PvConstants &pvConstants)
-						 : outputSection(outputsection),
-						 omegas(omegas),
-						 pvConstants(pvConstants)
+						 : mOutputSection(outputsection),
+						   mOmegas(omegas),
+						   mPvConstants(pvConstants)
 		{}
 
-		PV::MultiPhaseVocoder::OutputSection* outputSection;
-		float* omegas;
-		PV::PvConstants pvConstants;
+		PV::MultiPhaseVocoder::OutputSection* mOutputSection;
+		float* mOmegas;
+		PV::PvConstants mPvConstants;
 	};
 
 	HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs* HWY_RESTRICT args);

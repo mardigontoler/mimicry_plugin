@@ -7,9 +7,9 @@
 namespace mimicry {
     class DelayControllerLookAndFeel : public WhiteLabelLookAndFeel {
 
-        juce::Font getLabelFont(juce::Label& label) override
+        juce::Font getLabelFont(juce::Label& /*label*/) override
         {
-            return getNormalFont(12);
+            return Fonts::getNormalFont(12);
         }
 
     };

@@ -196,5 +196,5 @@ void MimicAudioProcessorEditor::buttonStateChanged(Button* button) {
     }
 }
 
-void MimicAudioProcessorEditor::buttonClicked(Button* button) {
+void MimicAudioProcessorEditor::buttonClicked(Button* /*button*/) {
 }
