@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT supported OUTPUT error)
+    if(supported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
+endif()
+
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -146,6 +155,7 @@ target_sources(mimicry PRIVATE
     src/gui/DelayHeadController.cpp
     src/gui/DelayHeadController.h
     src/gui/font.h
+    src/gui/colors.h
     src/gui/MimicryLookAndFeel.cpp
     src/gui/MimicryLookAndFeel.h
     src/gui/TempoDisplay.h
