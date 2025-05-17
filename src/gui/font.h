@@ -13,13 +13,13 @@ namespace mimicry {
 			return font.withHeight(heigth);
 		}
 
-		static juce::Font getHeaderFont(float height) {
-			static juce::Font font((juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::CinzelDecorativeRegular_ttf, BinaryData::CinzelDecorativeRegular_ttfSize))));
-			return font.withHeight(height);
-		}
+//		static juce::Font getHeaderFont(float height) {
+//			static juce::Font font((juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::CinzelDecorativeRegular_ttf, BinaryData::CinzelDecorativeRegular_ttfSize))));
+//			return font.withHeight(height);
+//		}
 
 		static juce::Font getNormalFont(float height) {
-			juce::Font font((juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::UbuntuMedium_ttf, BinaryData::UbuntuMedium_ttfSize))));
+			juce::Font font((juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::InterVariable_ttf, BinaryData::InterVariable_ttfSize))));
 			return font.withHeight(height);;
 		}
 	};

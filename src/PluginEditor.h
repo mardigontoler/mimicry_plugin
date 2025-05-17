@@ -67,8 +67,8 @@ private:
 
     // areas to place components
     juce::Rectangle<int> area;
-    juce::Rectangle<int> leftArea;
-    juce::Rectangle<int> headerArea;
+    juce::Rectangle<int> bannerArea;
+	juce::Rectangle<int> presetArea;
     juce::Rectangle<int> delayHeadsArea;
     juce::Rectangle<int> delayHeadsTopArea;
     juce::Rectangle<int> delayHeadsBottomArea;

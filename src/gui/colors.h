@@ -24,6 +24,16 @@ namespace mimicry
 		static juce::Colour getBgGradientCol2() {
 			return juce::Colour::fromRGB(0x16, 0x16, 0x16);
 		}
+
+		static juce::Colour getDelayControllerBgGradient1() {
+			return juce::Colour::fromRGB(0x10, 0x10, 0x10);
+		}
+
+		static juce::Colour getDelayControllerBgGradient2() {
+			return juce::Colour::fromRGB(0x1F, 0x1F, 0x1F);
+		}
+
+
 	};
 
 }

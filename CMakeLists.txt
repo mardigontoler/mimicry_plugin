@@ -124,6 +124,7 @@ juce_add_binary_data(mimicry_binary_data
         res/CinzelDecorative-Regular.ttf
         res/Segment7-4Gml.otf
         res/Ubuntu-Medium.ttf
+        res/inter/InterVariable.ttf
 )
 
 
@@ -161,6 +162,8 @@ target_sources(mimicry PRIVATE
     src/gui/TempoDisplay.h
     src/gui/TempoDisplay.cpp
     src/gui/WhiteLabelLookAndFeel.h
+    src/gui/LabeledSlider.h
+    src/gui/LabeledSlider.cpp
     src/pitch/MultiPhaseVocoder.cpp
     src/pitch/MultiPhaseVocoder.h
     src/pitch/pitch_functions.h

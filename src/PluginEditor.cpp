@@ -64,9 +64,9 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
 
     setLookAndFeel(&mimicryLookAndFeel);
     for (int i = 0; i < numStereoDelayLines; i++) {
-        const String iStr{i};
-        delayHeadControllers.add(new DelayHeadController(iStr));
-        String delayGainParamString = String("rhythmGain") + iStr;
+        delayHeadControllers.add(new DelayHeadController(String{i + 1}));
+		const String iStr{i};
+		String delayGainParamString = String("rhythmGain") + iStr;
         String semitoneParamString = String("pitchShift") + iStr;
 		String feedbackParamString = String("feedback") + iStr;
 
@@ -151,8 +151,7 @@ void MimicAudioProcessorEditor::paint (juce::Graphics& g)
 void MimicAudioProcessorEditor::resized()
 {
     area = getLocalBounds();
-    leftArea = area.removeFromLeft(210);
-    headerArea = leftArea.removeFromTop(50);
+	bannerArea = area.removeFromTop(40);
     delayHeadsArea = area.reduced(0, 5);
     delayHeadsTopArea = area.removeFromTop(static_cast<int>(
         static_cast<float>(area.getHeight()) / 2.0f))
@@ -160,44 +159,65 @@ void MimicAudioProcessorEditor::resized()
 
     delayHeadsBottomArea = area.reduced(30, 15);
 
-    Rectangle<int> titleLabelArea = headerArea.removeFromTop(static_cast<int>(2.0 * headerArea.getHeight() / 3.0f));
+	// Create flexbox for the tempo controls
+	juce::FlexBox tempoControls;
+	tempoControls.flexDirection = juce::FlexBox::Direction::row;
+	tempoControls.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+	tempoControls.alignItems = juce::FlexBox::AlignItems::center;
+	tempoControls.flexWrap = juce::FlexBox::Wrap::noWrap;
+
+	// Add items to the tempo controls flexbox
+	tempoControls.items.add(juce::FlexItem(tempoLabel).withMinWidth(30.0f).withMargin(3.0f));
+	tempoControls.items.add(juce::FlexItem(tempoDisplay).withMinWidth(30.0f).withHeight(30.0f).withMargin(3.0f));
+	tempoControls.items.add(juce::FlexItem(tempoKnob).withWidth(75.0f).withHeight(75.0f).withMargin(3.0f));
+	tempoControls.items.add(juce::FlexItem(tempoSyncBtn).withWidth(45.0f).withHeight(25.0f).withMargin(3.0f));
+
+	// Create flexbox for the division controls
+	juce::FlexBox divisionControls;
+	divisionControls.flexDirection = juce::FlexBox::Direction::row;
+	divisionControls.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+	divisionControls.alignItems = juce::FlexBox::AlignItems::center;
+	divisionControls.flexWrap = juce::FlexBox::Wrap::noWrap;
+
+	// Add items to the division controls flexbox
+	divisionControls.items.add(juce::FlexItem(divLabel).withWidth(60.0f).withMargin(3.0f));
+	divisionControls.items.add(juce::FlexItem(divisionKnob).withWidth(75.0f).withHeight(75.0f).withMargin(3.0f));
+
+
+	// Create flexbox for the mix controls
+	juce::FlexBox mixControls;
+	mixControls.flexDirection = juce::FlexBox::Direction::row;
+	mixControls.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+	mixControls.alignItems = juce::FlexBox::AlignItems::center;
+	mixControls.flexWrap = juce::FlexBox::Wrap::noWrap;
+
+	// Add items to the mix controls flexbox
+	mixControls.items.add(juce::FlexItem(mixLabel).withWidth(60.0f).withMargin(3.0f));
+	mixControls.items.add(juce::FlexItem(mixKnob).withWidth(75.0f).withHeight(75.0f).withMargin(3.0f));
+
+	// Create main vertical flexbox for the control panel
+	juce::FlexBox controlPanel;
+	controlPanel.flexDirection = juce::FlexBox::Direction::row;
+	controlPanel.justifyContent = juce::FlexBox::JustifyContent::flexStart;
+	controlPanel.alignItems = juce::FlexBox::AlignItems::flexStart;
+	controlPanel.flexWrap = juce::FlexBox::Wrap::noWrap;
+
+	// Add the control groups to the main flexbox
+	auto controlArea = bannerArea.removeFromLeft(800);
+	controlPanel.items.add(juce::FlexItem(tempoControls).withWidth(280.0f).withMargin(5.0f));
+	controlPanel.items.add(juce::FlexItem(divisionControls).withWidth(280.0f).withMargin(5.0f));
+	controlPanel.items.add(juce::FlexItem(mixControls).withWidth(280.0f).withMargin(5.0f));
+
+	// Perform the layout
+	controlPanel.performLayout(controlArea.toFloat());
+
+
+	Rectangle<int> titleLabelArea = bannerArea.removeFromRight(300);
     titleLabelArea.translate(-3, 10);
     titleLabel.setBounds(titleLabelArea);
 
-//    Rectangle<int> subTitleArea = headerArea; // copy
-//    subTitleArea.translate(0, 10);
-//    subTitleLabel.setBounds(subTitleArea);
 
-    // place components in sidebar
-    constexpr int labelAreaAmount = 20;
-    constexpr int labelMargin = 0;
-    constexpr int knobSize = 75;
-    constexpr int knobXMargin = 0;
-    constexpr int knobYMargin = 0;
-    constexpr int spacerSize = 30;
-
-    Rectangle<int> leftBar = leftArea; // copy rectangle
-    leftBar.removeFromTop(15);
-    Rectangle<int> tempoLabelBounds = leftBar.removeFromTop(labelAreaAmount).reduced(labelMargin);
-    tempoLabelBounds.translate(0, 15);
-    tempoLabel.setBounds(tempoLabelBounds);
-    tempoDisplay.setBounds(leftBar.removeFromTop(100).reduced(50, 15));
-    tempoKnob.setBounds(leftBar.removeFromTop(knobSize).reduced(knobXMargin, knobYMargin));
-    tempoSyncBtn.setBounds(leftBar.removeFromTop(45).reduced(50, 5));
-
-    leftBar.removeFromTop(spacerSize);
-
-    divLabel.setBounds(leftBar.removeFromTop(labelAreaAmount).reduced(labelMargin));
-    divisionKnob.setBounds(leftBar.removeFromTop(knobSize).reduced(knobXMargin, knobYMargin));
-
-    leftBar.removeFromTop(spacerSize);
-
-    mixLabel.setBounds(leftBar.removeFromTop(labelAreaAmount).reduced(labelMargin));
-    mixKnob.setBounds(leftBar.removeFromTop(knobSize).reduced(knobXMargin, knobYMargin));
-
-
-
-    // place delay line components on right side in two rows
+    // place delay line components in two rows
 	auto margin = 2;
     constexpr int delayHeadsPerRow = numStereoDelayLines / 2;
     const int delayHeadControllerSpacing = delayHeadsTopArea.getWidth() / delayHeadsPerRow;

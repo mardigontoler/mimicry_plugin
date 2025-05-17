@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "DelayHeadController.h"
+#include "gui/colors.h"
 
 using namespace juce;
 
@@ -13,15 +14,15 @@ DelayHeadController::DelayHeadController(juce::String label)
 
 	indexLabel.setText(label, dontSendNotification);
 
-	delayGainSlider.setSliderStyle(Slider::SliderStyle::Rotary);
+	delayGainSlider.setSliderStyle(Slider::SliderStyle::LinearVertical);
 	delayGainSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
 
 	// set up the semitones knob to have an editable textbox
-	semitonesKnob.setSliderStyle(Slider::SliderStyle::Rotary);
-	semitonesKnob.setTextBoxStyle(Slider::TextBoxBelow, false, 100, semitonesTextboxHeight);
+	semitonesKnob.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	semitonesKnob.setTextBoxStyle(Slider::TextBoxRight, false, 100, semitonesTextboxHeight);
 
-	feedbackKnob.setSliderStyle(Slider::SliderStyle::Rotary);
-	feedbackKnob.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+	feedbackKnob.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);;
+	feedbackKnob.setTextBoxStyle(Slider::TextBoxRight, true, 0, 0);
 
 	addAndMakeVisible(&indexLabel);
 	addAndMakeVisible(&delayGainSlider);
@@ -60,10 +61,10 @@ void DelayHeadController::resized()
 	const auto labelArea = area.removeFromTop(indexLabel.getFont().getHeight() + 4);
 	indexLabel.setBounds(labelArea);
 
-	const auto potHeight = area.getHeight() / 3;
-
-	const auto gainArea = area.removeFromTop(potHeight);
+	const auto gainArea = area.removeFromLeft(area.getWidth() / 3);
 	delayGainSlider.setBounds(gainArea);
+
+	const auto potHeight = area.getHeight() / 2;
 
 	const auto feedbackArea = area.removeFromTop(potHeight);
 	feedbackKnob.setBounds(feedbackArea);
@@ -76,8 +77,21 @@ void DelayHeadController::paint(Graphics &g)
 {
 	Component::paint(g);
 
+	auto bounds = getLocalBounds().toFloat();
 
+	// Base gradient
+	juce::ColourGradient baseGradient(
+			juce::Colour(mimicry::Colors::getDelayControllerBgGradient1()),
+			bounds.getTopLeft(),
+			juce::Colour(mimicry::Colors::getDelayControllerBgGradient2()),
+			bounds.getBottomRight(),
+			false
+	);
 
-	g.setColour(getLookAndFeel().findColour(juce::Label::backgroundColourId));
-	g.fillRoundedRectangle(getLocalBounds().toFloat(), 1);
+	baseGradient.addColour(0.25f, mimicry::Colors::getBgGradientCol2());
+	baseGradient.addColour(0.75f, mimicry::Colors::getBgGradientCol2());
+
+	g.setGradientFill(baseGradient);
+	g.fillRect(bounds);
+
 }
