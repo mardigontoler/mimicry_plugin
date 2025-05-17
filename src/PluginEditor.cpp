@@ -106,26 +106,19 @@ MimicAudioProcessorEditor::~MimicAudioProcessorEditor()
 //==============================================================================
 void MimicAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-//    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
 	auto bounds = getLocalBounds().toFloat();
 
 	// Base gradient
 	juce::ColourGradient baseGradient(
 			juce::Colour(mimicry::Colors::getBgGradientCol1()),
 			bounds.getTopLeft(),
-			juce::Colour(mimicry::Colors::getBgGradientCol2()),
+			juce::Colour(mimicry::Colors::getBgGradientCol1()),
 			bounds.getBottomRight(),
 			false
 	);
 
-	// Add multiple intermediate stops for smoother transition
-	for (float i = 0.2f; i < 1.0f; i += 0.2f)
-	{
-		baseGradient.addColour(i, baseGradient.getColourAtPosition(i - 0.1f)
-				.interpolatedWith(baseGradient.getColourAtPosition(i + 0.1f), 0.5f));
-	}
+	baseGradient.addColour(0.25f, mimicry::Colors::getBgGradientCol2());
+	baseGradient.addColour(0.75f, mimicry::Colors::getBgGradientCol2());
 
 	g.setGradientFill(baseGradient);
 	g.fillRect(bounds);
@@ -138,10 +131,12 @@ void MimicAudioProcessorEditor::paint (juce::Graphics& g)
 		juce::ColourGradient overlayGradient(
 				juce::Colour(mimicry::Colors::getBgGradientCol1()).withAlpha(0.3f),
 				bounds.getTopLeft().translated(offset, offset),
-				juce::Colour(mimicry::Colors::getBgGradientCol2()).withAlpha(0.3f),
+				juce::Colour(mimicry::Colors::getBgGradientCol1()).withAlpha(0.3f),
 				bounds.getBottomRight().translated(-offset, -offset),
 				false
 		);
+		baseGradient.addColour(0.25f, mimicry::Colors::getBgGradientCol2());
+		baseGradient.addColour(0.75f, mimicry::Colors::getBgGradientCol2());
 
 		g.setGradientFill(overlayGradient);
 		g.fillRect(bounds);
