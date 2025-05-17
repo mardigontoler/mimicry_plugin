@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.25)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -39,7 +39,7 @@ set(BUILD_TESTING OFF CACHE BOOL "Disable CTest testing")
 set( PROFILE_BUILD OFF CACHE BOOL "Pass -O0 for profiling debug builds on linux with optimizations" )
 
 if (${PROFILE_BUILD})
-    message("Enabling -O0 for a profileing build. Use with Debug configuration")
+    message("Enabling -O0 for a profiling build. Use with Debug configuration")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 endif()
