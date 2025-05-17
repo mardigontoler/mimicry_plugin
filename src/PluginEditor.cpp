@@ -87,7 +87,10 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (742, 560);
+    setSize (1125, 540);
+
+	setResizeLimits(670, 250, 4500, 2160);
+
 	setResizable(true, true);
 	setBounds(getLocalBounds());
 
