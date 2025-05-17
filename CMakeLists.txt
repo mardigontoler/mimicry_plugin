@@ -16,15 +16,21 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include(systematize)
 
+# These seem to work better if added before the project() call.
 if (APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+
+    # FORCE must be set, see https://stackoverflow.com/a/44340246
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version" FORCE)
+
     set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "") # must be set before project()
     set(CMAKE_XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=Release] "YES")
     set(CMAKE_XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=MinSizeRel] "YES")
     set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=Release] "dwarf-with-dsym")
     set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=MinSizeRel] "dwarf-with-dsym")
     set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=RelWithDebInfo] "dwarf-with-dsym")
+    set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 endif()
+
 
 # Control whether the CTest module invokes enable_testing().
 # Set to false here to prevent numerous unneeded ctest targets from being created when including google highway later
@@ -53,9 +59,18 @@ endif()
 
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
-    message(STATUS "Enabling parallel builds for MSVC")
+    # Enabling parallel builds for MSVC
     add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE INTERNAL "")
 endif()
+
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-fdiagnostics-color=always)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_compile_options(-fcolor-diagnostics)
+endif ()
+
 
 project(mimicry VERSION 0.1)
 
@@ -112,6 +127,9 @@ set(JUCE_ENABLE_MODULE_SOURCE_GROUPS ON)
 message("JUCE_PATH=${JUCE_PATH}")
 add_subdirectory(${JUCE_PATH} build_juce)
 
+add_subdirectory (modules/melatonin_inspector)
+
+
 set(HWY_ENABLE_CONTRIB OFF CACHE BOOL "Include contrib/")
 set(HWY_ENABLE_EXAMPLES OFF CACHE BOOL "Build examples")
 set(HWY_ENABLE_INSTALL OFF CACHE BOOL "Install library")
@@ -126,7 +144,7 @@ juce_add_binary_data(mimicry_binary_data
         res/Ubuntu-Medium.ttf
         res/inter/InterVariable.ttf
 )
-
+set_target_properties(mimicry_binary_data PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 
 juce_add_plugin(
@@ -206,6 +224,22 @@ target_include_directories(mimicry
     highway/hwy
 )
 
+# Pamplejuce sharedcode defaults
+if (MSVC)
+    # fast math and better simd support in RELEASE
+    # https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior?view=msvc-170#fast
+    target_compile_options(mimicry INTERFACE $<$<CONFIG:RELEASE>:/fp:fast>)
+else ()
+    # See the implications here:
+    # https://stackoverflow.com/q/45685487
+    target_compile_options(mimicry INTERFACE $<$<CONFIG:RELEASE>:-Ofast>)
+    target_compile_options(mimicry INTERFACE $<$<CONFIG:RelWithDebInfo>:-Ofast>)
+endif ()
+# Tell MSVC to properly report what c++ version is being used
+if (MSVC)
+    target_compile_options(SharedCode INTERFACE /Zc:__cplusplus)
+endif ()
+
 
 add_executable(benchmark_phase_correct
     src/benchmark_phase_correct.cpp
@@ -265,3 +299,28 @@ foreach(TARGET ${THIRDPARTY_TARGETS})
     endif()
 endforeach()
 
+
+# Pamplejuce sanitizer config
+option(WITH_ADDRESS_SANITIZER "Enable Address Sanitizer" OFF)
+option(WITH_THREAD_SANITIZER "Enable Thread Sanitizer" OFF)
+
+message(STATUS "Sanitizers: ASan=${WITH_ADDRESS_SANITIZER} TSan=${WITH_THREAD_SANITIZER}")
+if (WITH_ADDRESS_SANITIZER)
+    if (MSVC)
+        add_compile_options(/fsanitize=address)
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        # also enable UndefinedBehaviorSanitizer
+        # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        link_libraries(-fsanitize=address)
+    endif ()
+    message(WARNING "Address Sanitizer enabled")
+endif ()
+
+if (WITH_THREAD_SANITIZER)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(-fsanitize=thread -g -fno-omit-frame-pointer)
+        link_libraries(-fsanitize=thread)
+        message(WARNING "Thread Sanitizer enabled")
+    endif ()
+endif ()
