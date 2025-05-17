@@ -154,10 +154,6 @@ juce_add_plugin(
     BUNDLE_ID "com.mardigontoler.mimicry"
     FORMATS Standalone VST3 AU
     PLUGIN_CODE "mQwp"
-
-    # these seem to be needed to build on linux for now
-    NEEDS_WEB_BROWSER TRUE
-    NEEDS_CURL TRUE
 )
 
 
@@ -195,6 +191,7 @@ target_link_libraries(mimicry
         juce::juce_audio_utils
         juce::juce_dsp
         hwy
+        melatonin_inspector
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
@@ -213,6 +210,9 @@ target_compile_definitions(mimicry
     PRIVATE
         CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
         JUCE_DSP_USE_INTEL_MKL=1
+        JUCE_WEB_BROWSER=0  # If you set this to 1, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
+        JUCE_USE_CURL=0     # If you set this to 1, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
+        JUCE_VST3_CAN_REPLACE_VST2=0
 )
 target_include_directories(mimicry
     PRIVATE
