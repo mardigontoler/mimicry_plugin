@@ -221,6 +221,7 @@ target_include_directories(mimicry
 )
 target_include_directories(mimicry
     SYSTEM PRIVATE
+    highway
     highway/hwy
 )
 

@@ -11,6 +11,8 @@
 #include "gui/DelayControllerLookAndFeel.h"
 #include "gui/DigitalLookAndFeel.h"
 
+#include "melatonin_inspector/melatonin_inspector.h"
+
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
@@ -29,6 +31,8 @@ public:
     void resized() override;
 
 private:
+
+	melatonin::Inspector inspector { *this };
 
     // reference to the processor
     MimicAudioProcessor& processor;
