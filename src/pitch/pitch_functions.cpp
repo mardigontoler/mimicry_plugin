@@ -1,28 +1,29 @@
 
-#include "pitch_functions.h"
-
-#include "hwy/base.h"
 
 // First undef to prevent error when re-included.
 #undef HWY_TARGET_INCLUDE
 // For dynamic dispatch, specify the name of the current file (unfortunately
 // __FILE__ is not reliable) so that foreach_target.h can re-include it.
-#define HWY_TARGET_INCLUDE "pitch_functions.cpp" // NOLINT(cppcoreguidelines-macro-usage)
+#define HWY_TARGET_INCLUDE "pitch_functions.cpp"
 
 // Generates code for each enabled target by re-including this source file.
 
-#include "hwy/foreach_target.h"  // IWYU pragma: keep
+#include "hwy/foreach_target.h"
 
 // Must come after foreach_target.h to avoid redefinition errors.
-#include "hwy/aligned_allocator.h"
 #include "hwy/highway.h"
+
+#include "pitch_functions.h"
+
+#include "hwy/aligned_allocator.h"
+#include "hwy/base.h"
+
 
 #include "hwy/contrib/math/math-inl.h"
 
+HWY_BEFORE_NAMESPACE();
 
-HWY_BEFORE_NAMESPACE();  // NOLINT(cppcoreguidelines-macro-usage)
-
-namespace pitch_functions // NOLINT(*-concat-nested-namespaces)
+namespace pitch_functions
 {
 namespace HWY_NAMESPACE
 {
@@ -32,7 +33,7 @@ namespace HWY_NAMESPACE
 
 
 	template <class D, class V>
-	HWY_ATTR V NormalizeAngle(D d, V x) // NOLINT
+	V NormalizeAngle(D d, V x) // NOLINT
 	{
 		const auto v_two_pi = Set(d, kTwoPI);
 		const auto v_pi = Set(d, kPI);
@@ -54,7 +55,7 @@ namespace HWY_NAMESPACE
 
 
 	template <class D, class V>
-	HWY_MAYBE_UNUSED V CosApprox(D d, V x)
+	V CosApprox(D d, V x)
 	{
 		// taylor series approx for cosine.
 		// 1 - x^2/2! + x^4/4! - x^6/6! ...
@@ -84,7 +85,7 @@ namespace HWY_NAMESPACE
 	}
 
 	template <class D, class V>
-	HWY_MAYBE_UNUSED V SinApprox(D d, V x)
+	V SinApprox(D d, V x)
 	{
 		// Taylor series approx for sine.
 		// x - x^3/3! + x^5/5! - x^7/7! ...
@@ -233,5 +234,3 @@ namespace pitch_functions
 }
 
 #endif // HWY_ONCE
-
-

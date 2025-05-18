@@ -238,7 +238,7 @@ else ()
 endif ()
 # Tell MSVC to properly report what c++ version is being used
 if (MSVC)
-    target_compile_options(SharedCode INTERFACE /Zc:__cplusplus)
+    target_compile_options(mimicry INTERFACE /Zc:__cplusplus)
 endif ()
 
 
