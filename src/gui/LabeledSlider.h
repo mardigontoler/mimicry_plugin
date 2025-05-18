@@ -6,7 +6,7 @@
 class LabeledSlider : public juce::Component
 {
 public:
-	explicit LabeledSlider(const juce::String& labelText);
+	explicit LabeledSlider();
 
 	void resized() override;
 

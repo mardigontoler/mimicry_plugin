@@ -203,6 +203,9 @@ bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
 
 void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiBuffer& /*midiMessages*/)
 {
+#if JUCE_DEBUG
+	return;
+#else
     ScopedNoDenormals noDenormals;
     const auto totalNumInputChannels  = getTotalNumInputChannels();
     const auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -317,6 +320,8 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         ioAudioBuffer.clear (i, 0, ioAudioBuffer.getNumSamples());
+
+#endif
 
 }
 

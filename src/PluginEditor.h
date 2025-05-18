@@ -10,6 +10,7 @@
 #include "gui/WhiteLabelLookAndFeel.h"
 #include "gui/DelayControllerLookAndFeel.h"
 #include "gui/DigitalLookAndFeel.h"
+#include "gui/TempoControls.h"
 
 #include "melatonin_inspector/melatonin_inspector.h"
 
@@ -20,7 +21,7 @@ typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class MimicAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::Button::Listener
+class MimicAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
     MimicAudioProcessorEditor (MimicAudioProcessor&, juce::AudioProcessorValueTreeState&);
@@ -40,7 +41,6 @@ private:
     // reference to the audio paramter tree
     juce::AudioProcessorValueTreeState& valueTreeState;
 
-
     mimicry::MimicryLookAndFeel mimicryLookAndFeel;
     TitleLookAndFeel titleLookAndFeel;
     SubTitleLookAndFeel subTitleLookAndFeel;
@@ -48,40 +48,21 @@ private:
     mimicry::WhiteLabelLookAndFeel whiteLabelLookAndFeel;
     mimicry::DelayControllerLookAndFeel delayControllerLookAndFeel;
 
-    // listener callback
-    void buttonStateChanged(juce::Button*) override;
-    void buttonClicked(juce::Button*) override;
 
     // child components
     //=======================
-	mimicry::DigitalLookAndFeel digitalLAF;
-    TempoDisplay tempoDisplay;
-
-    juce::Slider mixKnob;
-    std::unique_ptr<SliderAttachment> mixAttachment; // attach slider to processor param
-
-    juce::Slider tempoKnob;
-    std::unique_ptr<SliderAttachment> tempoKnobAttachment;
-
-    juce::Slider divisionKnob;
-    std::unique_ptr<SliderAttachment> divisionKnobAttachment;
-
-    juce::TextButton tempoSyncBtn;
-    std::unique_ptr<ButtonAttachment> tempoSyncBtnAttachment;
 
     // areas to place components
-    juce::Rectangle<int> area;
-    juce::Rectangle<int> bannerArea;
-	juce::Rectangle<int> presetArea;
-    juce::Rectangle<int> delayHeadsArea;
-    juce::Rectangle<int> delayHeadsTopArea;
-    juce::Rectangle<int> delayHeadsBottomArea;
+    juce::Rectangle<float> area;
+    juce::Rectangle<float> bannerArea;
+	juce::Rectangle<float> presetArea;
+    juce::Rectangle<float> delayHeadsArea;
+    juce::Rectangle<float> delayHeadsTopArea;
+    juce::Rectangle<float> delayHeadsBottomArea;
+
+	mimicry::TempoControls tempoControls;
 
     juce::Label titleLabel;
-//    juce::Label subTitleLabel;
-    juce::Label tempoLabel;
-    juce::Label divLabel;
-    juce::Label mixLabel;
 
     // array of sliders for the rhythm parameters
     juce::OwnedArray<DelayHeadController> delayHeadControllers;

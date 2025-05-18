@@ -1,10 +1,10 @@
 
 #include "LabeledSlider.h"
 
-LabeledSlider::LabeledSlider(const juce::String &labelText)
+LabeledSlider::LabeledSlider()
 {
 	// Setup label
-	label.setText(labelText, juce::dontSendNotification);
+	label.setText("", juce::dontSendNotification);
 	label.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(label);
 
@@ -13,11 +13,12 @@ LabeledSlider::LabeledSlider(const juce::String &labelText)
 	knob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
 	knob.setDoubleClickReturnValue(true, 0.0);
 	addAndMakeVisible(knob);
+
+	label.attachToComponent(&knob, true);
 }
 
 void LabeledSlider::resized()
 {
 	auto bounds = getLocalBounds();
-	label.setBounds(bounds.removeFromTop(20));
 	knob.setBounds(bounds);
 }

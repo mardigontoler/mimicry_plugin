@@ -167,6 +167,7 @@ target_sources(mimicry PRIVATE
 #    src/delay/StereoMultiHeadDelayLine.h
     src/gui/title/TitleLookAndFeel.h
     src/gui/DelayControllerLookAndFeel.h
+    src/gui/DigitalLookAndFeel.h
     src/gui/DelayHeadController.cpp
     src/gui/DelayHeadController.h
     src/gui/font.h
@@ -178,6 +179,8 @@ target_sources(mimicry PRIVATE
     src/gui/WhiteLabelLookAndFeel.h
     src/gui/LabeledSlider.h
     src/gui/LabeledSlider.cpp
+    src/gui/TempoControls.h
+    src/gui/TempoControls.cpp
     src/pitch/MultiPhaseVocoder.cpp
     src/pitch/MultiPhaseVocoder.h
     src/pitch/pitch_functions.h

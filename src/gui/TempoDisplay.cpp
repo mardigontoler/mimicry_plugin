@@ -5,6 +5,7 @@
 TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
 	: mValueTreeState(vts)
 {
+	setLookAndFeel(&digitalLAF);
 	tempoLabel.setText("120", juce::NotificationType::dontSendNotification);
 	glowLabel.setText("120", juce::NotificationType::dontSendNotification);
 	tempoLabel.setJustificationType(juce::Justification::right);
@@ -14,6 +15,14 @@ TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
 
 	addAndMakeVisible(tempoLabel);
 //	addAndMakeVisible(glowLabel, 1);
+
+	mValueTreeState->addParameterListener("tempoSync", this);
+}
+
+TempoDisplay::~TempoDisplay()
+{
+	mValueTreeState->removeParameterListener("tempoSync", this);
+	setLookAndFeel(nullptr);
 }
 
 
