@@ -32,7 +32,7 @@ private:
     juce::String mText;
     bool mSyncActive{false};
     juce::Label tempoLabel;
-    juce::Label glowLabel;
+    juce::Label bgTextLabel;
 
 //    GlowEffect glowEffect;
 

@@ -118,7 +118,6 @@ void MimicAudioProcessorEditor::resized()
 	bannerFlexBox.items.add(juce::FlexItem(tempoControls).withFlex(0.5).withMinHeight(bannerArea.getHeight()) );
 	bannerFlexBox.items.add(juce::FlexItem(titleLabel).withFlex(0.5) );
 
-	DBG(bannerArea.getHeight());
 	bannerFlexBox.performLayout(bannerArea);
 
     // place delay line components in two rows

@@ -6,28 +6,26 @@ mimicry::TempoControls::TempoControls(MimicAudioProcessor &processor, juce::Audi
     : mValueTreeState(&vts), tempoDisplay(&vts)
 {
 
-	addAndMakeVisible(tempoDisplay);
-	addAndMakeVisible(tempoSyncBtn);
-	addAndMakeVisible(mixKnob);
-	addAndMakeVisible(divisionKnob);
-
 	tempoKnob.getLabel().setText("Tempo", NotificationType::dontSendNotification);
 	tempoKnob.getLabel().setJustificationType(Justification::centred);
 	addAndMakeVisible(tempoKnob);
 
-	divLabel.setText("Div", NotificationType::dontSendNotification);
-	divLabel.setJustificationType(Justification::centred);
-	addAndMakeVisible(divLabel);
+	divisionKnob.getLabel().setText("Div", NotificationType::dontSendNotification);
+	divisionKnob.getLabel().setJustificationType(Justification::centred);
 
-	mixLabel.setText("Mix", NotificationType::dontSendNotification);
-	mixLabel.setJustificationType(Justification::centred);
-	addAndMakeVisible(mixLabel);
+	mixKnob.getLabel().setText("Mix", NotificationType::dontSendNotification);
+	mixKnob.getLabel().setJustificationType(Justification::centred);
 
 	// connect components to processor
-	mixAttachment = std::make_unique<SliderAttachment>(*mValueTreeState, "mix", mixKnob);
+	mixAttachment = std::make_unique<SliderAttachment>(*mValueTreeState, "mix", mixKnob.getSlider());
 	tempoKnobAttachment = std::make_unique<SliderAttachment>(*mValueTreeState, "bpm", tempoKnob.getSlider());;
 	tempoSyncBtnAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(*mValueTreeState, "tempoSync", tempoSyncBtn);
-	divisionKnobAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(*mValueTreeState, "division", divisionKnob);
+	divisionKnobAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(*mValueTreeState, "division", divisionKnob.getSlider());
+
+	addAndMakeVisible(tempoDisplay);
+	addAndMakeVisible(tempoSyncBtn);
+	addAndMakeVisible(mixKnob);
+	addAndMakeVisible(divisionKnob);
 
 }
 
@@ -42,11 +40,10 @@ void mimicry::TempoControls::resized()
 	fb.alignItems = juce::FlexBox::AlignItems::stretch;
 	fb.flexWrap = juce::FlexBox::Wrap::noWrap;
 
-	for (Component& item : std::initializer_list<std::reference_wrapper<juce::Component>>{
-		tempoDisplay, tempoKnob, tempoSyncBtn, divisionKnob})
-	{
-		fb.items.add(FlexItem(item).withFlex(1.0f).withMinHeight(50));
-	}
+	fb.items.add(FlexItem(tempoDisplay).withMinWidth(90).withMaxWidth(90));
+	fb.items.add(FlexItem(tempoKnob).withMinWidth(50).withFlex(1.0f));
+	fb.items.add(FlexItem(tempoSyncBtn).withMinWidth(50).withMaxWidth(50));
+	fb.items.add(FlexItem(mixKnob).withMinWidth(50).withFlex(1.0f));
 
 	fb.performLayout(area);
 }

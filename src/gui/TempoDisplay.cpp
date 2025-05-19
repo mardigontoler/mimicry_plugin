@@ -1,20 +1,22 @@
 
 #include "TempoDisplay.h"
 
+#include <utility>
+
 
 TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
 	: mValueTreeState(vts)
 {
 	setLookAndFeel(&digitalLAF);
 	tempoLabel.setText("120", juce::NotificationType::dontSendNotification);
-	glowLabel.setText("120", juce::NotificationType::dontSendNotification);
+	bgTextLabel.setText("000", juce::NotificationType::dontSendNotification);
 	tempoLabel.setJustificationType(juce::Justification::right);
-	glowLabel.setJustificationType(juce::Justification::right);
+	bgTextLabel.setJustificationType(juce::Justification::right);
 	tempoLabel.setMinimumHorizontalScale(0.0f);
-	glowLabel.setMinimumHorizontalScale(0.0f);
+	bgTextLabel.setMinimumHorizontalScale(0.0f);
 
 	addAndMakeVisible(tempoLabel);
-//	addAndMakeVisible(glowLabel, 1);
+	addAndMakeVisible(bgTextLabel, 0);
 
 	mValueTreeState->addParameterListener("tempoSync", this);
 }
@@ -44,15 +46,13 @@ void TempoDisplay::resized()
 		localBounds.getWidth(),
 		localBounds.getHeight()
 	);
-	Rectangle<int> glowTextBoxBounds = textBoxBounds;
-	glowTextBoxBounds.translate(-2, -2);
 
-	const Colour mainColour = tempoLabel.findColour(Label::textColourId, false);
+	const Colour mainColour = juce::Colours::grey;
 	Colour glowLabelColour = mainColour.withAlpha(0.4f);
-//	glowLabel.setColour(Label::textColourId, glowLabelColour);
+	bgTextLabel.setColour(Label::textColourId, glowLabelColour);
 
 	tempoLabel.setBounds(textBoxBounds);
-//	glowLabel.setBounds(glowTextBoxBounds);
+	bgTextLabel.setBounds(textBoxBounds);
 
 }
 
@@ -61,9 +61,9 @@ void TempoDisplay::SetText(juce::String text)
 {
 	using namespace juce;
 
-	mText = text;
+	mText = std::move(text);
 	tempoLabel.setText(mText, dontSendNotification);
-	glowLabel.setText(mText, dontSendNotification);
+	bgTextLabel.setText(mText, dontSendNotification);
 	repaint();
 }
 
