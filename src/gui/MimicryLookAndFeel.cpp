@@ -181,6 +181,8 @@ Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider &slider)
 
 	// override logic for left/right textboxes, else falsee back to original impl
 
+	const auto& name = slider.getName();
+
 	if (slider.isRotary() && (textBoxPos == Slider::TextBoxLeft || textBoxPos == Slider::TextBoxRight)) {
 
 		Slider::SliderLayout layout;
@@ -193,21 +195,28 @@ Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider &slider)
 		int availableHeight = localBounds.getHeight();
 		int availableWidth = localBounds.getWidth();
 
+		if (name == "Div" && availableWidth > 0)
+		{
+			int x = 5;
+		}
+
 		// Find the maximum size that can fit both the rotary part and the text box
-		int rotarySize = jmin(availableWidth, availableHeight);
+		int rotarySize = jmin(availableWidth - textBoxWidth, availableHeight);
 
 		// Center the rotary bounds
 		layout.sliderBounds = localBounds.withSizeKeepingCentre(rotarySize, rotarySize);
 
-		auto directionSign = textBoxPos == Slider::TextBoxLeft ? -1 : 1;
+		auto directionSign = textBoxPos == Slider::TextBoxLeft ? 1 : -1;
 		auto shiftAmt = directionSign * textBoxWidth / 2;
 		layout.sliderBounds.translate(shiftAmt, 0);
 		layout.sliderBounds = layout.sliderBounds.getIntersection(localBounds);
 
-		auto textBoxX = textBoxPos == Slider::TextBoxLeft ? layout.sliderBounds.getX() - textBoxWidth
+		auto textBoxX = textBoxPos == Slider::TextBoxLeft ?
+				layout.sliderBounds.getX() - textBoxWidth
 				: layout.sliderBounds.getRight() + 4;
 
-		layout.textBoxBounds = localBounds.withSizeKeepingCentre(textBoxWidth, textBoxHeight)
+		layout.textBoxBounds = localBounds
+				.withSizeKeepingCentre(textBoxWidth, textBoxHeight)
 				.withX(textBoxX);
 
 		return layout;
