@@ -14,9 +14,13 @@ mimicry::TempoControls::TempoControls(MimicAudioProcessor &processor, juce::Audi
 
 	divisionKnob.getLabel().setText("Div", NotificationType::dontSendNotification);
 	divisionKnob.getLabel().setJustificationType(Justification::centred);
+	divisionKnob.getSlider().setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+
 
 	mixKnob.getLabel().setText("Mix", NotificationType::dontSendNotification);
 	mixKnob.getLabel().setJustificationType(Justification::centred);
+	mixKnob.getSlider().setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+
 
 	// connect components to processor
 	mixAttachment = std::make_unique<SliderAttachment>(*mValueTreeState, "mix", mixKnob.getSlider());
@@ -43,9 +47,9 @@ void mimicry::TempoControls::resized()
 	fb.flexWrap = juce::FlexBox::Wrap::noWrap;
 
 	fb.items.add(FlexItem(tempoDisplay).withMinWidth(90).withMaxWidth(90));
-	fb.items.add(FlexItem(tempoKnob).withMinWidth(50).withFlex(1.0f));
-	fb.items.add(FlexItem(tempoSyncBtn).withMinWidth(50).withMaxWidth(50));
-	fb.items.add(FlexItem(mixKnob).withMinWidth(50).withFlex(1.0f));
+	fb.items.add(FlexItem(tempoKnob).withMinWidth(50).withFlex(0.0f));
+	fb.items.add(FlexItem(tempoSyncBtn).withMinWidth(50).withMaxWidth(50).withFlex(0.0f));
+	fb.items.add(FlexItem(mixKnob).withMinWidth(50).withFlex(0.0f));
 
 	fb.performLayout(area);
 }
