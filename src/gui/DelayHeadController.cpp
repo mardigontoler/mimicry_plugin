@@ -8,7 +8,7 @@ using namespace juce;
 
 
 
-DelayHeadController::DelayHeadController(juce::String label)
+DelayHeadController::DelayHeadController(const juce::String& label)
 {
 	constexpr int semitonesTextboxHeight = 15;
 
@@ -92,6 +92,5 @@ void DelayHeadController::paint(Graphics &g)
 	baseGradient.addColour(0.75f, mimicry::Colors::getBgGradientCol2());
 
 	g.setGradientFill(baseGradient);
-	g.fillRect(bounds);
-
+	g.fillRoundedRectangle(bounds, 5);
 }

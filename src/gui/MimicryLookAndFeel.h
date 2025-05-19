@@ -59,7 +59,7 @@ namespace mimicry {
 
         void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height,
                 float sliderPos, float /*minSliderPos*/, float /*maxSliderPos*/,
-                const juce::Slider::SliderStyle style, juce::Slider& slider) override;
+                juce::Slider::SliderStyle style, juce::Slider& slider) override;
 
 
 
@@ -69,7 +69,9 @@ namespace mimicry {
 
         void drawLabel(juce::Graphics& g, juce::Label& label) override;
 
-    private:
+		juce::Slider::SliderLayout getSliderLayout(juce::Slider &slider) override;
+
+	private:
         int thumbRadius = 15;
 
     };

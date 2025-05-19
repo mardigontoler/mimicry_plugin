@@ -63,8 +63,8 @@ void mimicry::MimicryLookAndFeel::drawLinearSlider(Graphics &g, int x, int y,
 {
 
 	float thumbSize = 30.0f;
-	float thumbThickness = 13.0f;
-	float trackThickness = 5.0f;
+	float thumbThickness = 2.0f;
+	float trackThickness = 2.0f;
 
 	auto centreX = static_cast<float>(x) + static_cast<float>(width) * 0.5f;
 //            auto centreY = static_cast<float>(y) + static_cast<float>(height) * 0.5f;
@@ -85,14 +85,14 @@ void mimicry::MimicryLookAndFeel::drawLinearSlider(Graphics &g, int x, int y,
 		g.setColour(slider.findColour(juce::Slider::thumbColourId));
 		g.fillRoundedRectangle(thumbRect, 2.0f);
 
-		juce::Rectangle<float> notchRect(
-				centreX - (thumbThickness / 2.0f),
-				sliderPos,
-				thumbThickness,
-				1.0f
-		);
-		g.setColour(MIMICRY_GRAY);
-		g.fillRect(notchRect);
+//		juce::Rectangle<float> notchRect(
+//				centreX - (thumbThickness / 2.0f),
+//				sliderPos,
+//				thumbThickness,
+//				1.0f
+//		);
+//		g.setColour(MIMICRY_GRAY);
+//		g.fillRect(notchRect);
 
 	}
 	else if(style == juce::Slider::LinearHorizontal){
@@ -131,7 +131,7 @@ void mimicry::MimicryLookAndFeel::drawRotarySlider(Graphics &g, int x, int y, in
 
 	// draw the outline and needle
 	g.setColour(slider.findColour(Slider::rotarySliderOutlineColourId));
-	g.drawEllipse(r, 3.0f);
+	g.drawEllipse(r, 2.0f);
 
 	Path needle;
 	auto r2 = r * 0.3f;
@@ -170,4 +170,51 @@ void mimicry::MimicryLookAndFeel::drawLabel(Graphics &g, Label &label)
 	}
 
 	//g.drawRect(label.getLocalBounds());
+}
+
+
+Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider &slider)
+{
+	// copied form lookandfeel_v2, with tweaks
+
+	auto textBoxPos = slider.getTextBoxPosition();
+
+	// override logic for left/right textboxes, else falsee back to original impl
+
+	if (slider.isRotary() && (textBoxPos == Slider::TextBoxLeft || textBoxPos == Slider::TextBoxRight)) {
+
+		Slider::SliderLayout layout;
+		auto localBounds = slider.getLocalBounds();
+
+		int textBoxWidth = slider.getTextBoxWidth();
+		int textBoxHeight = slider.getTextBoxHeight();
+
+		// Calculate the square area needed for the rotary part
+		int availableHeight = localBounds.getHeight();
+		int availableWidth = localBounds.getWidth();
+
+		// Find the maximum size that can fit both the rotary part and the text box
+		int rotarySize = jmin(availableWidth, availableHeight);
+
+		// Center the rotary bounds
+		layout.sliderBounds = localBounds.withSizeKeepingCentre(rotarySize, rotarySize);
+
+		auto directionSign = textBoxPos == Slider::TextBoxLeft ? -1 : 1;
+		auto shiftAmt = directionSign * textBoxWidth / 2;
+		layout.sliderBounds.translate(shiftAmt, 0);
+		layout.sliderBounds = layout.sliderBounds.getIntersection(localBounds);
+
+		auto textBoxX = textBoxPos == Slider::TextBoxLeft ? layout.sliderBounds.getX() - textBoxWidth
+				: layout.sliderBounds.getRight() + 4;
+
+		layout.textBoxBounds = localBounds.withSizeKeepingCentre(textBoxWidth, textBoxHeight)
+				.withX(textBoxX);
+
+		return layout;
+
+	}
+	else {
+		return LookAndFeel_V2::getSliderLayout(slider);
+	}
+
 }

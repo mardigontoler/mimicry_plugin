@@ -8,6 +8,8 @@ mimicry::TempoControls::TempoControls(MimicAudioProcessor &processor, juce::Audi
 
 	tempoKnob.getLabel().setText("Tempo", NotificationType::dontSendNotification);
 	tempoKnob.getLabel().setJustificationType(Justification::centred);
+	tempoKnob.getSlider().setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+	tempoKnob.getSlider().setNumDecimalPlacesToDisplay(0);
 	addAndMakeVisible(tempoKnob);
 
 	divisionKnob.getLabel().setText("Div", NotificationType::dontSendNotification);

@@ -13,12 +13,15 @@ LabeledSlider::LabeledSlider()
 	knob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
 	knob.setDoubleClickReturnValue(true, 0.0);
 	addAndMakeVisible(knob);
-
-	label.attachToComponent(&knob, true);
 }
 
 void LabeledSlider::resized()
 {
-	auto bounds = getLocalBounds();
-	knob.setBounds(bounds);
+	juce::GlyphArrangement glyphs;
+	glyphs.addLineOfText(label.getFont(), label.getText(), 0.0f, 0.0f);
+	auto labelHeight = label.getFont().getHeight() + 4;
+
+	auto bounds = getLocalBounds().toFloat();
+	label.setBounds(bounds.removeFromTop(labelHeight).toNearestInt());
+	knob.setBounds(bounds.toNearestInt());
 }
