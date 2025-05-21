@@ -10,7 +10,7 @@
 class TempoDisplay : public juce::Component, public juce::Slider::Listener, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    explicit TempoDisplay(juce::AudioProcessorValueTreeState* vts);
+    explicit TempoDisplay(juce::AudioProcessorValueTreeState& vts);
 
     ~TempoDisplay() override;
 
@@ -28,7 +28,7 @@ public:
 
 private:
 	mimicry::DigitalLookAndFeel digitalLAF;
-    juce::AudioProcessorValueTreeState* mValueTreeState;
+    juce::AudioProcessorValueTreeState& mValueTreeState;
     juce::String mText;
     bool mSyncActive{false};
     juce::Label tempoLabel;

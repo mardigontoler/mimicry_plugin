@@ -3,8 +3,10 @@
 
 #include <utility>
 
+std::vector<juce::String> listenedParameters{"tempoSync", "bpm"};
 
-TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
+
+TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState& vts)
 	: mValueTreeState(vts)
 {
 	setLookAndFeel(&digitalLAF);
@@ -18,12 +20,18 @@ TempoDisplay::TempoDisplay(juce::AudioProcessorValueTreeState* vts)
 	addAndMakeVisible(tempoLabel);
 	addAndMakeVisible(bgTextLabel, 0);
 
-	mValueTreeState->addParameterListener("tempoSync", this);
+	for (const auto& param : listenedParameters)
+	{
+		mValueTreeState.addParameterListener(param, this);
+	}
 }
 
 TempoDisplay::~TempoDisplay()
 {
-	mValueTreeState->removeParameterListener("tempoSync", this);
+	for (const auto& param : listenedParameters)
+	{
+		mValueTreeState.removeParameterListener(param, this);
+	}
 	setLookAndFeel(nullptr);
 }
 
@@ -62,8 +70,8 @@ void TempoDisplay::SetText(juce::String text)
 	using namespace juce;
 
 	mText = std::move(text);
+//	bgTextLabel.setText(mText, dontSendNotification);
 	tempoLabel.setText(mText, dontSendNotification);
-	bgTextLabel.setText(mText, dontSendNotification);
 	repaint();
 }
 
@@ -92,7 +100,7 @@ void TempoDisplay::TempoSyncChanged(const bool syncActive)
 	}
 	else
 	{
-		const auto tempoSyncParam = mValueTreeState->getParameter("bpm");
+		const auto tempoSyncParam = mValueTreeState.getParameter("bpm");
 		const auto newValue = tempoSyncParam->getNormalisableRange().convertFrom0to1(tempoSyncParam->getValue());
 		const auto truncValue = static_cast<int>(newValue);
 		const String str{truncValue};

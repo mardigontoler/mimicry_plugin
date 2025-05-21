@@ -17,7 +17,7 @@ typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
 class DelayHeadController : public juce::Component {
 public:
-    DelayHeadController(const juce::String& label);
+    explicit DelayHeadController(const juce::String& label);
 
     void resetDelayGainAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
 
