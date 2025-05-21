@@ -58,46 +58,45 @@ void mimicry::MimicryLookAndFeel::drawTickBox(
 
 
 void mimicry::MimicryLookAndFeel::drawLinearSlider(Graphics &g, int x, int y,
-											  int width, int height, float sliderPos, float,
-											  float, const juce::Slider::SliderStyle style, Slider &slider)
+											  int width, int height, float sliderPos, float minSliderPos,
+											  float maxSliderPos, const juce::Slider::SliderStyle style, Slider &slider)
 {
+	if(style == juce::Slider::LinearHorizontal){
+		LookAndFeel_V4::drawLinearSlider(g, x, y, width ,height, sliderPos, minSliderPos, maxSliderPos, style, slider);
+		return;
+	}
 
-	float thumbSize = 30.0f;
-	float thumbThickness = 2.0f;
+	float thumbSize = static_cast<float>(height) / 8.0f;
+	float thumbThickness = 4.0f;
 	float trackThickness = 2.0f;
 
 	auto centreX = static_cast<float>(x) + static_cast<float>(width) * 0.5f;
 //            auto centreY = static_cast<float>(y) + static_cast<float>(height) * 0.5f;
 
-	if (style == juce::Slider::LinearVertical) {
-		// draw the slider track
-		juce::Rectangle<float> r(centreX - (trackThickness / 2.0f), static_cast<float>(y), trackThickness, static_cast<float>(height));
-		g.setColour(slider.findColour(juce::Slider::backgroundColourId));
-		g.drawRoundedRectangle(r, 4.0f, trackThickness);
+	// draw the slider track
+	juce::Rectangle<float> r(centreX - (trackThickness / 2.0f), static_cast<float>(y), trackThickness, static_cast<float>(height));
+	g.setColour(slider.findColour(juce::Slider::backgroundColourId));
+	g.drawRoundedRectangle(r, 4.0f, trackThickness);
 
-		// draw the thumb and notch
-		juce::Rectangle<float> thumbRect(
-				centreX - (thumbThickness / 2.0f),
-				sliderPos - (thumbSize / 2.0f),
-				thumbThickness,
-				thumbSize
-		);
-		g.setColour(slider.findColour(juce::Slider::thumbColourId));
-		g.fillRoundedRectangle(thumbRect, 2.0f);
+	// redraw the track up to the current value with a darker version of the thumb color
+	juce::Rectangle<float> partialTrack(
+			centreX - (trackThickness / 2.0f),
+			sliderPos,
+			trackThickness,
+			(static_cast<float>(y) + static_cast<float>(height)) - sliderPos
+	);
+	g.setColour(slider.findColour(Slider::thumbColourId).darker(0.75f));
+	g.drawRoundedRectangle(partialTrack, 4.0f, trackThickness);
 
-//		juce::Rectangle<float> notchRect(
-//				centreX - (thumbThickness / 2.0f),
-//				sliderPos,
-//				thumbThickness,
-//				1.0f
-//		);
-//		g.setColour(MIMICRY_GRAY);
-//		g.fillRect(notchRect);
-
-	}
-	else if(style == juce::Slider::LinearHorizontal){
-		// todo if needed
-	}
+	// draw the thumb
+	juce::Rectangle<float> thumbRect(
+			centreX - (thumbThickness / 2.0f),
+			sliderPos - (thumbSize / 2.0f),
+			thumbThickness,
+			thumbSize
+	);
+	g.setColour(slider.findColour(juce::Slider::thumbColourId));
+	g.fillRoundedRectangle(thumbRect, 2.0f);
 
 }
 
