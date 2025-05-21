@@ -213,7 +213,7 @@ Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider &slider)
 
 		auto textBoxX = textBoxPos == Slider::TextBoxLeft ?
 				layout.sliderBounds.getX() - textBoxWidth
-				: layout.sliderBounds.getRight() + 4;
+				: layout.sliderBounds.getRight();
 
 		layout.textBoxBounds = localBounds
 				.withSizeKeepingCentre(textBoxWidth, textBoxHeight)

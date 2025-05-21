@@ -1,7 +1,10 @@
 
 #include "LabeledSlider.h"
 
-LabeledSlider::LabeledSlider()
+#include <utility>
+
+LabeledSlider::LabeledSlider(std::function<juce::String (double)> strValFunc)
+	: knob(std::move(strValFunc))
 {
 	// Setup label
 	label.setText("", juce::dontSendNotification);

@@ -12,6 +12,8 @@
 
 #include "juce_audio_processors/juce_audio_processors.h"
 
+#include "LabeledSlider.h"
+
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
 
@@ -33,8 +35,8 @@ public:
 private:
 
     juce::Slider delayGainSlider;
-    juce::Slider semitonesKnob;
-	juce::Slider feedbackKnob;
+    LabeledSlider semitonesKnob;
+	LabeledSlider feedbackKnob;
 	juce::Label indexLabel;
 
     std::unique_ptr<SliderAttachment> delayGainAttachment;

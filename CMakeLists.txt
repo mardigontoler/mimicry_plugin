@@ -181,6 +181,8 @@ target_sources(mimicry PRIVATE
     src/gui/LabeledSlider.cpp
     src/gui/TempoControls.h
     src/gui/TempoControls.cpp
+    src/gui/Widgets.h
+    src/gui/Widgets.cpp
     src/pitch/MultiPhaseVocoder.cpp
     src/pitch/MultiPhaseVocoder.h
     src/pitch/pitch_functions.h

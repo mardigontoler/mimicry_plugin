@@ -2,8 +2,8 @@
 
 using namespace juce;
 
-mimicry::TempoControls::TempoControls(MimicAudioProcessor &processor, juce::AudioProcessorValueTreeState& vts)
-    : mValueTreeState(vts), tempoDisplay(vts)
+mimicry::TempoControls::TempoControls(MimicAudioProcessor &/*processor*/, juce::AudioProcessorValueTreeState& vts)
+    : mValueTreeState(vts), tempoDisplay(vts), tempoKnob([](double v){return String(v);})
 {
 
 	tempoKnob.getLabel().setText("Tempo", NotificationType::dontSendNotification);
@@ -24,9 +24,6 @@ mimicry::TempoControls::TempoControls(MimicAudioProcessor &processor, juce::Audi
 
 	tempoSyncBtn.setButtonText("Sync");
 	tempoSyncBtn.setClickingTogglesState(true);
-
-	divComboBox.pl
-
 
 	auto divParamRange = mValueTreeState.getParameterRange("division");
 	int divValue = static_cast<int>(divParamRange.start);

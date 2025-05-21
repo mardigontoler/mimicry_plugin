@@ -7,8 +7,25 @@
 using namespace juce;
 
 
+juce::String valToPercent(double v)
+{
+	return String(v * 100.0) + "%";
+}
+
+juce::String valToSignedIntStr(double v)
+{
+	String prefix{""};
+	if (v > 0.0)
+	{
+		prefix = "+";
+	}
+
+	return prefix + String(roundToInt(v));
+}
+
 
 DelayHeadController::DelayHeadController(const juce::String& label)
+	: semitonesKnob(valToSignedIntStr), feedbackKnob(valToPercent)
 {
 	constexpr int semitonesTextboxHeight = 15;
 
@@ -18,11 +35,13 @@ DelayHeadController::DelayHeadController(const juce::String& label)
 	delayGainSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
 
 	// set up the semitones knob to have an editable textbox
-	semitonesKnob.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	semitonesKnob.setTextBoxStyle(Slider::TextBoxRight, false, 100, semitonesTextboxHeight);
+	semitonesKnob.getSlider().setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	semitonesKnob.getSlider().setTextBoxStyle(Slider::TextBoxRight, false, 30, semitonesTextboxHeight);
+	semitonesKnob.getLabel().setText("Pitch", dontSendNotification);
 
-	feedbackKnob.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);;
-	feedbackKnob.setTextBoxStyle(Slider::TextBoxRight, true, 0, 0);
+	feedbackKnob.getSlider().setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	feedbackKnob.getSlider().setTextBoxStyle(Slider::TextBoxRight, true, 30, semitonesTextboxHeight);
+	feedbackKnob.getLabel().setText("Fdbk", dontSendNotification);
 
 	addAndMakeVisible(&indexLabel);
 	addAndMakeVisible(&delayGainSlider);
@@ -43,33 +62,33 @@ void DelayHeadController::resetDelayGainAttachment(
 void
 DelayHeadController::resetSemitoneAttachment(AudioProcessorValueTreeState &valueTreeState, String &param)
 {
-	semitoneAttachment = std::make_unique<SliderAttachment>(valueTreeState, param, semitonesKnob);
+	semitoneAttachment = std::make_unique<SliderAttachment>(valueTreeState, param, semitonesKnob.getSlider());
 }
 
 
 void
 DelayHeadController::resetFeedbackAttachment(AudioProcessorValueTreeState &valueTreeState, String &param)
 {
-	feedbackAttachment = std::make_unique<SliderAttachment>(valueTreeState, param, feedbackKnob);
+	feedbackAttachment = std::make_unique<SliderAttachment>(valueTreeState, param, feedbackKnob.getSlider());
 }
 
 
 void DelayHeadController::resized()
 {
-	Rectangle<int> area = getLocalBounds();
+	auto area = getLocalBounds().toFloat();
 
 	const auto labelArea = area.removeFromTop(indexLabel.getFont().getHeight() + 4);
-	indexLabel.setBounds(labelArea);
+	indexLabel.setBounds(labelArea.toNearestInt());
 
-	const auto gainArea = area.removeFromLeft(area.getWidth() / 3);
-	delayGainSlider.setBounds(gainArea);
+	const auto gainArea = area.removeFromLeft(area.getWidth() / 3.0f);
+	delayGainSlider.setBounds(gainArea.toNearestInt());
 
-	const auto potHeight = area.getHeight() / 2;
+	const auto potHeight = area.getHeight() / 2.0f;
 
 	const auto feedbackArea = area.removeFromTop(potHeight);
-	feedbackKnob.setBounds(feedbackArea);
+	feedbackKnob.setBounds(feedbackArea.toNearestInt());
 
-	semitonesKnob.setBounds(area);
+	semitonesKnob.setBounds(area.toNearestInt());
 }
 
 
