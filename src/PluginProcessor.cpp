@@ -7,20 +7,19 @@ using namespace mimicry;
 using namespace juce;
 
 
-
-MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
-    BusesProperties()
-        .withInput  ("Input",  AudioChannelSet::mono(), true)
-        .withOutput ("Output Dry", AudioChannelSet::mono(), true)
+MimicAudioProcessor::MimicAudioProcessor() : AudioProcessor(
+        BusesProperties()
+                .withInput("Input", AudioChannelSet::mono(), true)
+                .withOutput("Output Dry", AudioChannelSet::mono(), true)
         //.withOutput ("Output Wet", AudioChannelSet::stereo(), true)
-    ),
-    parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
-	pitchShifters(numStereoDelayLines)
+),
+                                             parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
+                                             pitchShifters(numStereoDelayLines)
 {
-	for (size_t delayIx = 0; delayIx < numStereoDelayLines; delayIx++)
-	{
-		mDelayLines.emplace_back();
-	}
+    for (size_t delayIx = 0; delayIx < numStereoDelayLines; delayIx++)
+    {
+        mDelayLines.emplace_back();
+    }
 
     // set pointers to raw parameter values
     tempoSyncParam = parameters.getRawParameterValue("tempoSync");
@@ -29,10 +28,11 @@ MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
     mixParam = parameters.getRawParameterValue("mix");
     divisionParam = parameters.getRawParameterValue("division");
 
-    for (int i = 0; i < numStereoDelayLines; i++) {
+    for (int i = 0; i < numStereoDelayLines; i++)
+    {
         delayGainParams.push_back(parameters.getRawParameterValue(String("rhythmGain") + String(i)));
         semitoneParams.push_back(parameters.getRawParameterValue(String("pitchShift") + String(i)));
-		feedbackParams.push_back(parameters.getRawParameterValue(String("feedback") + String(i)));
+        feedbackParams.push_back(parameters.getRawParameterValue(String("feedback") + String(i)));
     }
 }
 
@@ -41,90 +41,91 @@ MimicAudioProcessor::~MimicAudioProcessor()
 = default;
 
 
-
-AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParameterLayout(){
+AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParameterLayout()
+{
 
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
     // fixed params
     params.push_back(
-        std::make_unique<AudioParameterFloat>(
-            "bpm",
-            "BPM",
-            MIN_TEMPO,
-            MAX_TEMPO,
-            120.0f)
+            std::make_unique<AudioParameterFloat>(
+                    "bpm",
+                    "BPM",
+                    MIN_TEMPO,
+                    MAX_TEMPO,
+                    120.0f)
     );
     params.push_back(
-        std::make_unique<AudioParameterBool>(
-            "tempoSync",
-            "Tempo Sync",
-            false)
+            std::make_unique<AudioParameterBool>(
+                    "tempoSync",
+                    "Tempo Sync",
+                    false)
     );
     params.push_back(
-        std::make_unique<AudioParameterFloat>(
-            "mix",
-            "Mix",
-            0.0f,
-            1.0f,
-            0.5f)
+            std::make_unique<AudioParameterFloat>(
+                    "mix",
+                    "Mix",
+                    0.0f,
+                    1.0f,
+                    0.5f)
     );
     params.push_back(
-        std::make_unique<AudioParameterInt>(
-            "division",
-            "Division",
-            1,
-            16,
-            8)
+            std::make_unique<AudioParameterInt>(
+                    "division",
+                    "Division",
+                    1,
+                    16,
+                    8)
     );
-	params.push_back(
-		std::make_unique<AudioParameterFloat>(
-			"outputGain",
-			"Output Gain",
-			NormalisableRange<float>(-60.0f, 24.0f, 1.0f),
-			        -60.0f,
-			AudioParameterFloatAttributes().withStringFromValueFunction([](float value, int length)
-				{
-					String s;
-					if (value <= -60.0f)
-						s = String("-inf");
-					s = String(value, 1) + " dB";
-					s = s.substring(0, length);
-					return s;
-				}
-			)
-		)
-	);
+    params.push_back(
+            std::make_unique<AudioParameterFloat>(
+                    "outputGain",
+                    "Output Gain",
+                    NormalisableRange<float>(-60.0f, 24.0f, 1.0f),
+                    -60.0f,
+                    AudioParameterFloatAttributes().withStringFromValueFunction([](float value, int length)
+                                                                                {
+                                                                                    String s;
+                                                                                    if (value <= -60.0f)
+                                                                                        s = String("-inf");
+                                                                                    s = String(value, 1) + " dB";
+                                                                                    s = s.substring(0, length);
+                                                                                    return s;
+                                                                                }
+                    )
+            )
+    );
 
 
     // dynamic parameters; one for each tap on the delay line.
     // First set up gains for each tap
-    for (int i = 0; i < numStereoDelayLines; i++) {
+    for (int i = 0; i < numStereoDelayLines; i++)
+    {
         params.push_back(std::make_unique<AudioParameterFloat>(
-            String("rhythmGain") + String(i),
-            String("Rhythm Gain ") + String(i),
-            -60.0f,
-            24.0f,
-            -60.0f));
+                String("rhythmGain") + String(i),
+                String("Rhythm Gain ") + String(i),
+                -60.0f,
+                24.0f,
+                -60.0f));
 
         // then set up #semitones for each tap
         params.push_back(std::make_unique<AudioParameterInt>(
-            String("pitchShift") + String(i),
-            String("Pitch Shift ") + String(i),
-            -24,
-            24,
-            0
-            ));
+                String("pitchShift") + String(i),
+                String("Pitch Shift ") + String(i),
+                -24,
+                24,
+                0
+        ));
 
-		params.push_back(std::make_unique<AudioParameterFloat>(
-				String("feedback") + String(i),
-				String("Feedback ") + String(i),
-				0.0f,
-				1.0f,
-				0.0f
-		));
+        params.push_back(std::make_unique<AudioParameterFloat>(
+                String("feedback") + String(i),
+                String("Feedback ") + String(i),
+                0.0f,
+                1.0f,
+                0.0f
+        ));
     }
 
-    return { params.begin(), params.end() };
+    return {params.begin(), params.end()};
 }
 
 
@@ -141,7 +142,7 @@ bool MimicAudioProcessor::acceptsMidi() const
 
 bool MimicAudioProcessor::producesMidi() const
 {
-   return false;
+    return false;
 }
 
 bool MimicAudioProcessor::isMidiEffect() const
@@ -164,46 +165,46 @@ int MimicAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void MimicAudioProcessor::setCurrentProgram (int /*index*/)
+void MimicAudioProcessor::setCurrentProgram(int /*index*/)
 {
 }
 
-const String MimicAudioProcessor::getProgramName (int /*index*/)
+const String MimicAudioProcessor::getProgramName(int /*index*/)
 {
     return {};
 }
 
-void MimicAudioProcessor::changeProgramName (int /*index*/, const String& /*newName*/)
+void MimicAudioProcessor::changeProgramName(int /*index*/, const String& /*newName*/)
 {
 }
 
 //==============================================================================
-void MimicAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void MimicAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     mMaxDelayLengthInSamples = static_cast<size_t>( 10 * sampleRate );
 
-	for (auto& delay : mDelayLines)
-	{
-		delay.reset();
-		dsp::ProcessSpec spec{sampleRate, static_cast<uint32>(samplesPerBlock), 1};
-		delay.prepare(spec);
-		delay.setMaximumDelayInSamples(static_cast<int>(mMaxDelayLengthInSamples));
-	}
+    for (auto& delay: mDelayLines)
+    {
+        delay.reset();
+        dsp::ProcessSpec spec{sampleRate, static_cast<uint32>(samplesPerBlock), 1};
+        delay.prepare(spec);
+        delay.setMaximumDelayInSamples(static_cast<int>(mMaxDelayLengthInSamples));
+    }
 
     delayLineSamples = std::vector<std::vector<float>>(
-			numStereoDelayLines,
-			std::vector<float>(
-					static_cast<size_t>(samplesPerBlock),
-					0));
+            numStereoDelayLines,
+            std::vector<float>(
+                    static_cast<size_t>(samplesPerBlock),
+                    0));
 }
 
 void MimicAudioProcessor::releaseResources()
 {
-    
+
 }
 
 
-bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool MimicAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
 
     const AudioChannelSet& mainInputChannelSet = layouts.getMainInputChannelSet();
@@ -212,18 +213,16 @@ bool MimicAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
     // only support mono in and out
     if (mainInputChannelSet != AudioChannelSet::mono())
         return false;
-    
+
     // either way, all buses must have same layout
     return mainInputChannelSet == mainOutputChannelSet;
 }
 
 
-
-
-void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiBuffer& /*midiMessages*/)
+void MimicAudioProcessor::processBlock(AudioBuffer<float>& ioAudioBuffer, MidiBuffer& /*midiMessages*/)
 {
 #if JUCE_DEBUG
-	return;
+    return;
 #else
     ScopedNoDenormals noDenormals;
     const auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -234,7 +233,7 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
     blockCounter = (blockCounter + 1) % 100;
     const bool timedDebug = blockCounter == 0;
 
-	const bool tempoSync = *tempoSyncParam > 0.5f;
+    const bool tempoSync = *tempoSyncParam > 0.5f;
     const float mix = *mixParam;
     const double sampleRate = getSampleRate();
 
@@ -278,18 +277,18 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
         //getStateXML();
     }
 
-	jassert(nextDelayLineSamples.size() == mDelayLines.size());
+    jassert(nextDelayLineSamples.size() == mDelayLines.size());
 
     for (size_t ix = 0; ix < mDelayLines.size(); ix++) {
         auto& delay = mDelayLines[ix];
 
-		size_t delaySamples =  ix * samplesPerSubdivision;
-		delaySamples = std::clamp<size_t>(delaySamples, 0, mMaxDelayLengthInSamples);
+        size_t delaySamples =  ix * samplesPerSubdivision;
+        delaySamples = std::clamp<size_t>(delaySamples, 0, mMaxDelayLengthInSamples);
 
-		delay.setDelay(static_cast<float>(delaySamples));
+        delay.setDelay(static_cast<float>(delaySamples));
 
         const auto semitones = static_cast<int>(*semitoneParams[ix]);
-		pitchShifters.setPitchShiftSemitones(ix, static_cast<float>(semitones));
+        pitchShifters.setPitchShiftSemitones(ix, static_cast<float>(semitones));
     }
 
 
@@ -309,23 +308,23 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
                     inputWithFeedback += delayLineSample * *(feedbackParams[headIndex]);
                 }
 
-				pitchShifters.pushSample(inputWithFeedback);
+                pitchShifters.pushSample(inputWithFeedback);
 
                 float summedDelayLinesSample = 0;
                 for (size_t headIndex = 0; headIndex < mDelayLines.size(); headIndex++)
-				{
-					// feed each pitch shifter output into the corresponding delay line
-					auto& delay = mDelayLines[headIndex];
+                {
+                    // feed each pitch shifter output into the corresponding delay line
+                    auto& delay = mDelayLines[headIndex];
 
-					const auto nextPitchShifterSample = pitchShifters.nextSample(headIndex);
+                    const auto nextPitchShifterSample = pitchShifters.nextSample(headIndex);
 
-					delay.pushSample(channel, nextPitchShifterSample);
+                    delay.pushSample(channel, nextPitchShifterSample);
 
-					auto delayedSample = delayLineSamples[headIndex][i];
-					const float gain = *(delayGainParams[headIndex]);
-					delayedSample *= gain;
+                    auto delayedSample = delayLineSamples[headIndex][i];
+                    const float gain = *(delayGainParams[headIndex]);
+                    delayedSample *= gain;
 
-					summedDelayLinesSample += delayedSample;
+                    summedDelayLinesSample += delayedSample;
                 }
 
                 const float mixedSample = ((1 - mix) * inputWithFeedback) + (mix * summedDelayLinesSample);
@@ -345,9 +344,6 @@ void MimicAudioProcessor::processBlock (AudioBuffer<float>& ioAudioBuffer, MidiB
 }
 
 
-
-
-
 //==============================================================================
 bool MimicAudioProcessor::hasEditor() const
 {
@@ -356,39 +352,41 @@ bool MimicAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* MimicAudioProcessor::createEditor()
 {
-    return new MimicAudioProcessorEditor (*this, parameters);
+    return new MimicAudioProcessorEditor(*this, parameters);
 }
 
 
-std::unique_ptr<XmlElement> MimicAudioProcessor::getStateXML() {
+std::unique_ptr<XmlElement> MimicAudioProcessor::getStateXML()
+{
     auto state = parameters.copyState();
     std::unique_ptr<XmlElement> xmlState(state.createXml());
     xmlState->setAttribute("version", 1);
-    #if JUCE_DEBUG
+#if JUCE_DEBUG
     // DBG("serializing state");
     // DBG(xmlState->toString());
-    #endif
+#endif
     return xmlState;
 }
 
 //==============================================================================
-void MimicAudioProcessor::getStateInformation (MemoryBlock& destData)
+void MimicAudioProcessor::getStateInformation(MemoryBlock& destData)
 {
     // host calls this to get the state
     std::unique_ptr<XmlElement> stateXml = getStateXML();
     copyXmlToBinary(*stateXml, destData);
 }
 
-void MimicAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void MimicAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     // host calls this to load state
     std::unique_ptr<XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
-    #if JUCE_DEBUG
+#if JUCE_DEBUG
     // DBG("loading state");
     // DBG(xmlState->toString());
-    #endif
+#endif
     if (xmlState != nullptr)
-        if (xmlState->hasTagName(parameters.state.getType())) {
+        if (xmlState->hasTagName(parameters.state.getType()))
+        {
             ValueTree valueTree = ValueTree::fromXml(*xmlState);
 
             parameters.replaceState(valueTree);

@@ -6,7 +6,8 @@
 #include "../font.h"
 #include "../MimicryLookAndFeel.h"
 
-class TitleLookAndFeel: public juce::LookAndFeel_V4 {
+class TitleLookAndFeel : public juce::LookAndFeel_V4
+{
 
 
     juce::Font getLabelFont(juce::Label& /*label*/) override
@@ -17,7 +18,8 @@ class TitleLookAndFeel: public juce::LookAndFeel_V4 {
 };
 
 
-class SubTitleLookAndFeel : public mimicry::MimicryLookAndFeel {
+class SubTitleLookAndFeel : public mimicry::MimicryLookAndFeel
+{
 
     juce::Font getLabelFont(juce::Label& /*label*/) override
     {

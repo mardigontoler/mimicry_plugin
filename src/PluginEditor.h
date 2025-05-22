@@ -21,14 +21,16 @@ typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class MimicAudioProcessorEditor  : public juce::AudioProcessorEditor
+class MimicAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
-    MimicAudioProcessorEditor (MimicAudioProcessor&, juce::AudioProcessorValueTreeState&);
+    MimicAudioProcessorEditor(MimicAudioProcessor&, juce::AudioProcessorValueTreeState&);
+
     ~MimicAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
+
     void resized() override;
 
 private:
@@ -52,15 +54,15 @@ private:
     // child components
     //=======================
 
-	mimicry::TempoControls tempoControls;
+    mimicry::TempoControls tempoControls;
 
     juce::Label titleLabel;
 
-	LabeledSlider mixKnob;
-	std::unique_ptr<SliderAttachment> mixAttachment; // attach slider to processor param
+    LabeledSlider mixKnob;
+    std::unique_ptr<SliderAttachment> mixAttachment; // attach slider to processor param
 
-	LabeledSlider outputGainKnob;
-	std::unique_ptr<SliderAttachment> outputGainAttachment;
+    LabeledSlider outputGainKnob;
+    std::unique_ptr<SliderAttachment> outputGainAttachment;
 
     // array of sliders for the rhythm parameters
     juce::OwnedArray<DelayHeadController> delayHeadControllers;

@@ -3,8 +3,9 @@
 #include "juce_core/juce_core.h"
 
 
-template <class T>
-class MultiHeadDelayLine {
+template<class T>
+class MultiHeadDelayLine
+{
 
 public:
 
@@ -24,7 +25,8 @@ public:
     ~MultiHeadDelayLine() = default;
 
 
-    void resize(const size_t _size) {
+    void resize(const size_t _size)
+    {
         size = _size;
         delayLineData.resize(size);
     }
@@ -32,19 +34,23 @@ public:
 
     T getNextDelayedSample(const size_t headIndex)
     {
-        if(currentDelays[headIndex] == 0){
+        if (currentDelays[headIndex] == 0)
+        {
             return delayLineData[juce::negativeAwareModulo(writeHead - 1, delayLineData.size())] * gains[headIndex];
         }
         smoothedReadHeads[headIndex] += deltaSmoothReads[headIndex];
-        while (smoothedReadHeads[headIndex] >= size) {
+        while (smoothedReadHeads[headIndex] >= size)
+        {
             smoothedReadHeads[headIndex] -= size;
         }
-        while (smoothedReadHeads[headIndex] < 0) {
+        while (smoothedReadHeads[headIndex] < 0)
+        {
             smoothedReadHeads[headIndex] += size;
         }
         targetReadHeads[headIndex] = (targetReadHeads[headIndex] + 1) % size;
 
-        if (deltaSmoothReads[headIndex] != 1.0f) {
+        if (deltaSmoothReads[headIndex] != 1.0f)
+        {
             remainingStepsAtAlteredRate[headIndex] -= 1;
             if (remainingStepsAtAlteredRate[headIndex] <= 1)
             {
@@ -66,7 +72,6 @@ public:
     }
 
 
-
     // set the delay size (in samples) for read head i
     void setNumDelaySamples(const size_t i, const size_t numSamples, const size_t sampleRate)
     {
@@ -75,18 +80,19 @@ public:
 
         setTargetDelay(i, numSamples);
 
-        if(numSamples == 0){
+        if (numSamples == 0)
+        {
 
         }
 
-		auto tol = juce::Tolerance<float>{};
+        auto tol = juce::Tolerance<float>{};
 
         if (initialDelaysSet[i] && juce::approximatelyEqual(delaySizeChange, 0.0f))
         { // only set a delta if the delay had already been set before
 
             // set the delta for this head so that it will be at the target within .5 seconds
             //float distanceToNewTarget = smoothedReadHeads[i] - targetReadHeads[i];
-            const auto numSamplesToGetToTarget =  static_cast<size_t> ( static_cast<float>(sampleRate) * 0.5f );
+            const auto numSamplesToGetToTarget = static_cast<size_t> ( static_cast<float>(sampleRate) * 0.5f );
             remainingStepsAtAlteredRate[i] = numSamplesToGetToTarget;
 
             // calculate where the target will be by the time we want to meet it
@@ -95,11 +101,13 @@ public:
             // how fast should we move the smoothed read head so that it will be at the projected target once we're done moving it?
             // the current read head position might technically be past the projected target, so we "unwrap" it onto a noncircular axis first
             float currentReadHead = smoothedReadHeads[i];
-            while (currentReadHead > projectedTargetReadHead) {
+            while (currentReadHead > projectedTargetReadHead)
+            {
                 currentReadHead -= size;
             }
             // then set the delta
-            deltaSmoothReads[i] = (projectedTargetReadHead - smoothedReadHeads[i]) / static_cast<float>(numSamplesToGetToTarget);
+            deltaSmoothReads[i] =
+                    (projectedTargetReadHead - smoothedReadHeads[i]) / static_cast<float>(numSamplesToGetToTarget);
 
 
         }
@@ -112,12 +120,13 @@ public:
         std::fill(delayLineData.begin(), delayLineData.end(), 0);
     }
 
-    [[nodiscard]] size_t getNumHeads() const {return targetReadHeads.size();}
+    [[nodiscard]] size_t getNumHeads() const
+    { return targetReadHeads.size(); }
 
-    void setGain(const size_t i, const float gain){
+    void setGain(const size_t i, const float gain)
+    {
         gains[i] = gain;
     }
-
 
 
 private:
@@ -125,10 +134,11 @@ private:
     void setTargetDelay(const size_t i, const size_t numSamples)
     {
         // set the target read head behind the write head
-        if (numSamples > writeHead) {
+        if (numSamples > writeHead)
+        {
             targetReadHeads[i] = size - (numSamples - writeHead);
-        }
-        else {
+        } else
+        {
             targetReadHeads[i] = writeHead - numSamples;
         }
     }

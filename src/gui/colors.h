@@ -6,34 +6,40 @@
 
 namespace mimicry
 {
-	class Colors
-	{
-	public:
-		static juce::Colour getPrimaryColor() {
-			return juce::Colour::fromRGB(0x00, 0xFF, 0x90);
-		}
+    class Colors
+    {
+    public:
+        static juce::Colour getPrimaryColor()
+        {
+            return juce::Colour::fromRGB(0x00, 0xFF, 0x90);
+        }
 
-		static juce::Colour getDividerColor() {
-			return juce::Colour::fromRGB(0x45, 0x4F, 0x52);
-		}
+        static juce::Colour getDividerColor()
+        {
+            return juce::Colour::fromRGB(0x45, 0x4F, 0x52);
+        }
 
-		static juce::Colour getBgGradientCol1() {
-			return juce::Colour::fromRGB(0x33, 0x33, 0x33);
-		}
+        static juce::Colour getBgGradientCol1()
+        {
+            return juce::Colour::fromRGB(0x33, 0x33, 0x33);
+        }
 
-		static juce::Colour getBgGradientCol2() {
-			return juce::Colour::fromRGB(0x16, 0x16, 0x16);
-		}
+        static juce::Colour getBgGradientCol2()
+        {
+            return juce::Colour::fromRGB(0x16, 0x16, 0x16);
+        }
 
-		static juce::Colour getDelayControllerBgGradient1() {
-			return juce::Colour::fromRGB(0x10, 0x10, 0x10);
-		}
+        static juce::Colour getDelayControllerBgGradient1()
+        {
+            return juce::Colour::fromRGB(0x10, 0x10, 0x10);
+        }
 
-		static juce::Colour getDelayControllerBgGradient2() {
-			return juce::Colour::fromRGB(0x1F, 0x1F, 0x1F);
-		}
+        static juce::Colour getDelayControllerBgGradient2()
+        {
+            return juce::Colour::fromRGB(0x1F, 0x1F, 0x1F);
+        }
 
 
-	};
+    };
 
 }

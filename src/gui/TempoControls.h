@@ -10,31 +10,35 @@
 
 namespace mimicry
 {
-class TempoControls : public juce::Component, public juce::Button::Listener {
-	public:
-		explicit TempoControls(MimicAudioProcessor& processor, juce::AudioProcessorValueTreeState& vts);
-		 ~TempoControls() override;
+    class TempoControls : public juce::Component, public juce::Button::Listener
+    {
+    public:
+        explicit TempoControls(MimicAudioProcessor& processor, juce::AudioProcessorValueTreeState& vts);
 
-		void resized() override;
+        ~TempoControls() override;
 
-		// listener callback
-		void buttonStateChanged(juce::Button*) override;
-		void buttonClicked(juce::Button*) override {}
+        void resized() override;
 
-	private:
+        // listener callback
+        void buttonStateChanged(juce::Button*) override;
 
-		juce::AudioProcessorValueTreeState& mValueTreeState;
+        void buttonClicked(juce::Button*) override
+        {}
 
-		mimicry::DigitalLookAndFeel digitalLAF;
-		TempoDisplay tempoDisplay;
+    private:
 
-		LabeledSlider tempoKnob;
-		std::unique_ptr<SliderAttachment> tempoKnobAttachment;
+        juce::AudioProcessorValueTreeState& mValueTreeState;
 
-		juce::ComboBox divComboBox;
-		std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> divComboBoxAttachment;
+        mimicry::DigitalLookAndFeel digitalLAF;
+        TempoDisplay tempoDisplay;
 
-		juce::TextButton tempoSyncBtn;
-		std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> tempoSyncBtnAttachment;
-	};
+        LabeledSlider tempoKnob;
+        std::unique_ptr<SliderAttachment> tempoKnobAttachment;
+
+        juce::ComboBox divComboBox;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> divComboBoxAttachment;
+
+        juce::TextButton tempoSyncBtn;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> tempoSyncBtnAttachment;
+    };
 }

@@ -5,14 +5,16 @@
 #include "font.h"
 #include "juce_gui_basics/juce_gui_basics.h"
 
-namespace mimicry {
+namespace mimicry
+{
 
-    class MimicryLookAndFeel : public juce::LookAndFeel_V4 {
+    class MimicryLookAndFeel : public juce::LookAndFeel_V4
+    {
 
 
     public:
 
-        juce::Colour MIMICRY_GRAY = juce::Colour::fromRGB(196,196,196);
+        juce::Colour MIMICRY_GRAY = juce::Colour::fromRGB(196, 196, 196);
 
         MimicryLookAndFeel();
 
@@ -41,14 +43,15 @@ namespace mimicry {
 //        }
 
         void drawTickBox(juce::Graphics& g, juce::Component& component,
-            float x, float y, float w, float h,
-            bool ticked,
-            bool isEnabled,
-            bool isMouseOverButton,
-            bool isButtonDown) override;
+                         float x, float y, float w, float h,
+                         bool ticked,
+                         bool isEnabled,
+                         bool isMouseOverButton,
+                         bool isButtonDown) override;
 
 
-        int getSliderThumbRadius(juce::Slider& /*slider*/) override{
+        int getSliderThumbRadius(juce::Slider& /*slider*/) override
+        {
             return thumbRadius;
         }
 
@@ -57,21 +60,20 @@ namespace mimicry {
 //        }
 
 
-        void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height,
-                float sliderPos, float minSliderPos, float maxSliderPos,
-                juce::Slider::SliderStyle style, juce::Slider& slider) override;
-
+        void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+                              float sliderPos, float minSliderPos, float maxSliderPos,
+                              juce::Slider::SliderStyle style, juce::Slider& slider) override;
 
 
         void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos,
-            float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override;
+                              float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override;
 
 
         void drawLabel(juce::Graphics& g, juce::Label& label) override;
 
-		juce::Slider::SliderLayout getSliderLayout(juce::Slider &slider) override;
+        juce::Slider::SliderLayout getSliderLayout(juce::Slider& slider) override;
 
-	private:
+    private:
         int thumbRadius = 15;
 
     };

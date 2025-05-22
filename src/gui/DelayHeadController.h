@@ -17,7 +17,8 @@
 typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
 
-class DelayHeadController : public juce::Component {
+class DelayHeadController : public juce::Component
+{
 public:
     explicit DelayHeadController(const juce::String& label);
 
@@ -25,23 +26,23 @@ public:
 
     void resetSemitoneAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
 
-	void resetFeedbackAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
+    void resetFeedbackAttachment(juce::AudioProcessorValueTreeState& valueTreeState, juce::String& param);
 
     void resized() override;
 
-	void paint(juce::Graphics &g) override;
+    void paint(juce::Graphics& g) override;
 
 
 private:
 
     juce::Slider delayGainSlider;
     LabeledSlider semitonesKnob;
-	LabeledSlider feedbackKnob;
-	juce::Label indexLabel;
+    LabeledSlider feedbackKnob;
+    juce::Label indexLabel;
 
     std::unique_ptr<SliderAttachment> delayGainAttachment;
     std::unique_ptr<SliderAttachment> semitoneAttachment;
-	std::unique_ptr<SliderAttachment> feedbackAttachment;
+    std::unique_ptr<SliderAttachment> feedbackAttachment;
 
 
 };

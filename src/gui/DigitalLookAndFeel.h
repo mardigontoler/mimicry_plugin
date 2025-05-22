@@ -7,17 +7,18 @@
 
 namespace mimicry
 {
-	class DigitalLookAndFeel : public MimicryLookAndFeel {
-		juce::Font getLabelFont(juce::Label & /*label*/) override
-		{
-			return Fonts::getSegmentFont(50);
-		}
+    class DigitalLookAndFeel : public MimicryLookAndFeel
+    {
+        juce::Font getLabelFont(juce::Label& /*label*/) override
+        {
+            return Fonts::getSegmentFont(50);
+        }
 
-	public:
-		DigitalLookAndFeel()
-		{
-			setColour(juce::Label::textColourId, mimicry::Colors::getPrimaryColor());
-			setColour(juce::Label::backgroundColourId, juce::Colours::black);
-		}
-	};
+    public:
+        DigitalLookAndFeel()
+        {
+            setColour(juce::Label::textColourId, mimicry::Colors::getPrimaryColor());
+            setColour(juce::Label::backgroundColourId, juce::Colours::black);
+        }
+    };
 }

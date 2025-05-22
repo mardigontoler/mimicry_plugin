@@ -6,13 +6,19 @@
 namespace mimicry
 {
 
-class PresetSelector : public juce::Component {
+    class PresetSelector : public juce::Component
+    {
 
-public:
-	PresetSelector(){}
-	~PresetSelector(){}
-	void resized() override {};
-	};
+    public:
+        PresetSelector()
+        {}
+
+        ~PresetSelector()
+        {}
+
+        void resized() override
+        {};
+    };
 
 } // mimicry
 

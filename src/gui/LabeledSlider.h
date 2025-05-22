@@ -8,16 +8,19 @@
 class LabeledSlider : public juce::Component
 {
 public:
-	explicit LabeledSlider(std::function<juce::String (double)> strValFunc);
+    explicit LabeledSlider(std::function<juce::String(double)> strValFunc);
 
-	void resized() override;
+    void resized() override;
 
-	mimicry::Widgets::CustomTextSlider& getSlider() { return knob; }
-	juce::Label& getLabel() { return label; }
+    mimicry::Widgets::CustomTextSlider& getSlider()
+    { return knob; }
+
+    juce::Label& getLabel()
+    { return label; }
 
 private:
-	juce::Label label;
-	mimicry::Widgets::CustomTextSlider knob;
+    juce::Label label;
+    mimicry::Widgets::CustomTextSlider knob;
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LabeledSlider)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LabeledSlider)
 };

@@ -8,23 +8,25 @@
 // the SIMD instruction set.
 #include "hwy/base.h"  // HWY_RESTRICT
 
-namespace pitch_functions {
+namespace pitch_functions
+{
 
-	struct PhaseCorrectArgs{
+    struct PhaseCorrectArgs
+    {
 
-		PhaseCorrectArgs(PV::MultiPhaseVocoder::OutputSection *outputsection, float *omegas,
-						 const PV::PvConstants &pvConstants)
-						 : mOutputSection(outputsection),
-						   mOmegas(omegas),
-						   mPvConstants(pvConstants)
-		{}
+        PhaseCorrectArgs(PV::MultiPhaseVocoder::OutputSection* outputsection, float* omegas,
+                         const PV::PvConstants& pvConstants)
+                : mOutputSection(outputsection),
+                  mOmegas(omegas),
+                  mPvConstants(pvConstants)
+        {}
 
-		PV::MultiPhaseVocoder::OutputSection* mOutputSection;
-		float* mOmegas;
-		PV::PvConstants mPvConstants;
-	};
+        PV::MultiPhaseVocoder::OutputSection* mOutputSection;
+        float* mOmegas;
+        PV::PvConstants mPvConstants;
+    };
 
-	HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs* HWY_RESTRICT args);
+    HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs* HWY_RESTRICT args);
 
 
 }  // namespace pitch

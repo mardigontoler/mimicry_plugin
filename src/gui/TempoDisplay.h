@@ -7,7 +7,8 @@
 /**
 * Simple component that's just a rectange with a label.
 */
-class TempoDisplay : public juce::Component, public juce::Slider::Listener, public juce::AudioProcessorValueTreeState::Listener
+class TempoDisplay
+        : public juce::Component, public juce::Slider::Listener, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     explicit TempoDisplay(juce::AudioProcessorValueTreeState& vts);
@@ -24,10 +25,10 @@ public:
 
     void TempoSyncChanged(bool syncActive);
 
-    void parameterChanged(const juce::String&parameterID, float newValue) override;
+    void parameterChanged(const juce::String& parameterID, float newValue) override;
 
 private:
-	mimicry::DigitalLookAndFeel digitalLAF;
+    mimicry::DigitalLookAndFeel digitalLAF;
     juce::AudioProcessorValueTreeState& mValueTreeState;
     juce::String mText;
     bool mSyncActive{false};
