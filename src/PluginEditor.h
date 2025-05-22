@@ -33,7 +33,7 @@ public:
 
 private:
 
-	melatonin::Inspector inspector { *this };
+//	melatonin::Inspector inspector { *this };
 
     // reference to the processor
     MimicAudioProcessor& processor;
@@ -52,17 +52,15 @@ private:
     // child components
     //=======================
 
-    // areas to place components
-    juce::Rectangle<float> area;
-    juce::Rectangle<float> bannerArea;
-	juce::Rectangle<float> presetArea;
-    juce::Rectangle<float> delayHeadsArea;
-    juce::Rectangle<float> delayHeadsTopArea;
-    juce::Rectangle<float> delayHeadsBottomArea;
-
 	mimicry::TempoControls tempoControls;
 
     juce::Label titleLabel;
+
+	LabeledSlider mixKnob;
+	std::unique_ptr<SliderAttachment> mixAttachment; // attach slider to processor param
+
+	LabeledSlider outputGainKnob;
+	std::unique_ptr<SliderAttachment> outputGainAttachment;
 
     // array of sliders for the rhythm parameters
     juce::OwnedArray<DelayHeadController> delayHeadControllers;

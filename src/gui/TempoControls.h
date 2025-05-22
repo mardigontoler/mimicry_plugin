@@ -28,14 +28,8 @@ class TempoControls : public juce::Component, public juce::Button::Listener {
 		mimicry::DigitalLookAndFeel digitalLAF;
 		TempoDisplay tempoDisplay;
 
-//		LabeledSlider mixKnob;
-//		std::unique_ptr<SliderAttachment> mixAttachment; // attach slider to processor param
-
 		LabeledSlider tempoKnob;
 		std::unique_ptr<SliderAttachment> tempoKnobAttachment;
-
-//		LabeledSlider divisionKnob;
-//		std::unique_ptr<SliderAttachment> divisionKnobAttachment;
 
 		juce::ComboBox divComboBox;
 		std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> divComboBoxAttachment;

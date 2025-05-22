@@ -10,9 +10,21 @@ using namespace juce;
 using namespace mimicry;
 
 
+String mixValueToString(double v)
+{
+	return String(v * 100.0) + "%";
+}
+
+String outputGainToString(double v)
+{
+	return String(v);
+}
+
+
 //==============================================================================
 MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), tempoControls(p, vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), tempoControls(p, vts),
+	mixKnob(mixValueToString), outputGainKnob(outputGainToString)
 
 {
 
@@ -39,6 +51,16 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor (MimicAudioProcessor& p, Au
         addAndMakeVisible(controller);
     }
 
+	mixKnob.getSlider().setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	mixKnob.getLabel().setText("Dry/Wet", dontSendNotification);
+	mixAttachment = std::make_unique<SliderAttachment>(valueTreeState, "mix", mixKnob.getSlider());
+	addAndMakeVisible(mixKnob);
+
+	outputGainKnob.getSlider().setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	outputGainKnob.getLabel().setText("Output Gain", dontSendNotification);
+	outputGainAttachment = std::make_unique<SliderAttachment>(valueTreeState, "outputGain", outputGainKnob.getSlider());
+	addAndMakeVisible(outputGainKnob);
+
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (1125, 540);
@@ -57,15 +79,15 @@ MimicAudioProcessorEditor::~MimicAudioProcessorEditor()
 
 
 //==============================================================================
-void MimicAudioProcessorEditor::paint (juce::Graphics& g)
+void MimicAudioProcessorEditor::paint (Graphics& g)
 {
 	auto bounds = getLocalBounds().toFloat();
 
 	// Base gradient
-	juce::ColourGradient baseGradient(
-			juce::Colour(mimicry::Colors::getBgGradientCol1()),
+	ColourGradient baseGradient(
+			Colour(mimicry::Colors::getBgGradientCol1()),
 			bounds.getTopLeft(),
-			juce::Colour(mimicry::Colors::getBgGradientCol1()),
+			Colour(mimicry::Colors::getBgGradientCol1()),
 			bounds.getBottomRight(),
 			false
 	);
@@ -81,10 +103,10 @@ void MimicAudioProcessorEditor::paint (juce::Graphics& g)
 	{
 		float offset = static_cast<float>(i + 1) * 30;
 
-		juce::ColourGradient overlayGradient(
-				juce::Colour(mimicry::Colors::getBgGradientCol1()).withAlpha(0.3f),
+		ColourGradient overlayGradient(
+				Colour(mimicry::Colors::getBgGradientCol1()).withAlpha(0.3f),
 				bounds.getTopLeft().translated(offset, offset),
-				juce::Colour(mimicry::Colors::getBgGradientCol1()).withAlpha(0.3f),
+				Colour(mimicry::Colors::getBgGradientCol1()).withAlpha(0.3f),
 				bounds.getBottomRight().translated(-offset, -offset),
 				false
 		);
@@ -100,35 +122,84 @@ void MimicAudioProcessorEditor::paint (juce::Graphics& g)
 
 void MimicAudioProcessorEditor::resized()
 {
-    area = getLocalBounds().toFloat();
-	bannerArea = area.removeFromTop(60);
-    delayHeadsArea = area.reduced(0, 5);
-    delayHeadsTopArea = area.removeFromTop(static_cast<int>(
-        static_cast<float>(area.getHeight()) / 2.0f))
-        .reduced(30, 15);
+	FlexBox bannerFlexBox; // banner at the top containing tempo controls, preset selector, logo, settings
+	bannerFlexBox.flexDirection = FlexBox::Direction::row;
+	bannerFlexBox.justifyContent = FlexBox::JustifyContent::flexStart;
+	bannerFlexBox.alignItems = FlexBox::AlignItems::stretch;
+	bannerFlexBox.flexWrap = FlexBox::Wrap::noWrap;
 
-    delayHeadsBottomArea = area.reduced(30, 15);
+	bannerFlexBox.items.add(FlexItem(tempoControls).withFlex(0.5f).withMinHeight(60));
+	bannerFlexBox.items.add(FlexItem(titleLabel).withFlex(0.5f).withMinHeight(60));
 
-	juce::FlexBox bannerFlexBox;
-	bannerFlexBox.flexDirection = juce::FlexBox::Direction::row;
-	bannerFlexBox.justifyContent = juce::FlexBox::JustifyContent::flexStart;
-	bannerFlexBox.alignItems = juce::FlexBox::AlignItems::stretch;
-	bannerFlexBox.flexWrap = juce::FlexBox::Wrap::noWrap;
+	// place delay line components in two rows
 
-	bannerFlexBox.items.add(juce::FlexItem(tempoControls).withFlex(0.5).withMinHeight(bannerArea.getHeight()) );
-	bannerFlexBox.items.add(juce::FlexItem(titleLabel).withFlex(0.5) );
+	FlexBox topDelays;
+	topDelays.flexDirection = FlexBox::Direction::row;
+	topDelays.justifyContent = FlexBox::JustifyContent::spaceAround;
+	topDelays.alignItems = FlexBox::AlignItems::stretch;
+	topDelays.flexWrap = FlexBox::Wrap::noWrap;
 
-	bannerFlexBox.performLayout(bannerArea);
+	FlexBox bottomDelays;
+	bottomDelays.flexDirection = FlexBox::Direction::row;
+	bottomDelays.justifyContent = FlexBox::JustifyContent::spaceAround;
+	bottomDelays.alignItems = FlexBox::AlignItems::stretch;
+	bottomDelays.flexWrap = FlexBox::Wrap::noWrap;
 
-    // place delay line components in two rows
-	float margin = 2.0f;
     constexpr int delayHeadsPerRow = numStereoDelayLines / 2;
-    const float delayHeadControllerSpacing = delayHeadsTopArea.getWidth() / delayHeadsPerRow;
     for(int i = 0; i < numStereoDelayLines; i++){
-        if(i < delayHeadsPerRow)
-            delayHeadControllers[i]->setBounds(delayHeadsTopArea.removeFromLeft(delayHeadControllerSpacing).reduced(margin).toNearestInt());
-        else
-            delayHeadControllers[i]->setBounds(delayHeadsBottomArea.removeFromLeft(delayHeadControllerSpacing).reduced(margin).toNearestInt());
-    }
+		FlexBox* targetFB;
+		if(i < delayHeadsPerRow)
+		{
+			targetFB = &topDelays;
+		}
+		else
+		{
+			targetFB = &bottomDelays;
+		}
+		targetFB->items.add(FlexItem(*delayHeadControllers[i])
+		.withFlex(0.5f).withMinWidth(60).withMinHeight(60)
+		.withMargin(FlexItem::Margin(10))
+		);
+	}
+
+
+	FlexBox delays;
+	delays.flexDirection = FlexBox::Direction::column;
+	delays.justifyContent = FlexBox::JustifyContent::spaceAround;
+	delays.alignItems = FlexBox::AlignItems::stretch;
+	delays.flexWrap = FlexBox::Wrap::noWrap;
+
+	delays.items.add(FlexItem(topDelays).withFlex(0.5f).withMinHeight(60));
+	delays.items.add(FlexItem(bottomDelays).withFlex(0.5f).withMinHeight(60));
+
+
+	FlexBox rightPanel;
+	rightPanel.flexDirection = FlexBox::Direction::column;
+	rightPanel.justifyContent = FlexBox::JustifyContent::spaceAround;
+	rightPanel.alignItems = FlexBox::AlignItems::stretch;
+	rightPanel.flexWrap = FlexBox::Wrap::noWrap;
+
+	rightPanel.items.add(FlexItem(outputGainKnob).withFlex(0.5f));
+	rightPanel.items.add(FlexItem(mixKnob).withFlex(0.5f));
+
+	FlexBox bottomHalf;
+	bottomHalf.flexDirection = FlexBox::Direction::row;
+	bottomHalf.justifyContent = FlexBox::JustifyContent::spaceBetween;
+	bottomHalf.alignItems = FlexBox::AlignItems::stretch;
+	bottomHalf.flexWrap = FlexBox::Wrap::noWrap;
+
+	bottomHalf.items.add(FlexItem(delays).withMinHeight(200).withFlex(0.95f));
+	bottomHalf.items.add(FlexItem(rightPanel).withMinHeight(200).withMinWidth(50).withFlex(0.05f));
+
+	FlexBox uiFlexBox; // outermost
+	uiFlexBox.flexDirection = FlexBox::Direction::column;
+	uiFlexBox.justifyContent = FlexBox::JustifyContent::spaceBetween;
+	uiFlexBox.alignItems = FlexBox::AlignItems::stretch;
+	uiFlexBox.flexWrap = FlexBox::Wrap::noWrap;
+
+	uiFlexBox.items.add(FlexItem(bannerFlexBox).withMinHeight(60).withMaxHeight(60));
+	uiFlexBox.items.add(FlexItem(bottomHalf).withFlex(1.0f));
+
+	uiFlexBox.performLayout(getLocalBounds());
 
 }

@@ -7,6 +7,7 @@ using namespace mimicry;
 using namespace juce;
 
 
+
 MimicAudioProcessor::MimicAudioProcessor(): AudioProcessor (
     BusesProperties()
         .withInput  ("Input",  AudioChannelSet::mono(), true)
@@ -75,6 +76,24 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
             16,
             8)
     );
+	params.push_back(
+		std::make_unique<AudioParameterFloat>(
+			"outputGain",
+			"Output Gain",
+			NormalisableRange<float>(-60.0f, 24.0f, 1.0f),
+			        -60.0f,
+			AudioParameterFloatAttributes().withStringFromValueFunction([](float value, int length)
+				{
+					String s;
+					if (value <= -60.0f)
+						s = String("-inf");
+					s = String(value, 1) + " dB";
+					s = s.substring(0, length);
+					return s;
+				}
+			)
+		)
+	);
 
 
     // dynamic parameters; one for each tap on the delay line.
@@ -83,9 +102,9 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
         params.push_back(std::make_unique<AudioParameterFloat>(
             String("rhythmGain") + String(i),
             String("Rhythm Gain ") + String(i),
-            0.0f,
-            1.0f,
-            0.0f));
+            -60.0f,
+            24.0f,
+            -60.0f));
 
         // then set up #semitones for each tap
         params.push_back(std::make_unique<AudioParameterInt>(
