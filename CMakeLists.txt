@@ -254,26 +254,6 @@ if (MSVC)
     target_compile_options(mimicry INTERFACE /Zc:__cplusplus)
 endif ()
 
-
-add_executable(benchmark_phase_correct
-    src/benchmark_phase_correct.cpp
-)
-target_link_libraries(benchmark_phase_correct
-    PRIVATE
-    hwy
-    mimicry
-    juce::juce_audio_utils
-    juce::juce_dsp
-)
-target_include_directories(benchmark_phase_correct
-    PRIVATE
-    src/
-    src/pitch
-)
-target_compile_definitions(benchmark_phase_correct PRIVATE
-    JUCE_WEB_BROWSER=0
-)
-
 function(resolve_alias_target output_var target_name)
     if(NOT TARGET "${target_name}")
         set(${output_var} "${target_name}" PARENT_SCOPE)
