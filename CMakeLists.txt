@@ -22,6 +22,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+# include systematize, a cmake module. Helps mark 3rd party libs as sytem libs to suppress compiler warnings from them.
 include(systematize)
 
 # These seem to work better if added before the project() call.

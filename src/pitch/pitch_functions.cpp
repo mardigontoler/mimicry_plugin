@@ -60,7 +60,7 @@ namespace pitch_functions::HWY_NAMESPACE
         // taylor series approx for cosine.
         // 1 - x^2/2! + x^4/4! - x^6/6! ...
 
-        x = NormalizeAngle(d, x);
+        // x = NormalizeAngle(d, x);
 
         const auto x2 = Mul(x, x);
         const auto x4 = Mul(x2, x2);
@@ -90,7 +90,7 @@ namespace pitch_functions::HWY_NAMESPACE
         // Taylor series approx for sine.
         // x - x^3/3! + x^5/5! - x^7/7! ...
 
-        x = NormalizeAngle(d, x);
+        // x = NormalizeAngle(d, x);
 
         const auto x2 = Mul(x, x);
         const auto x3 = Mul(x2, x);
