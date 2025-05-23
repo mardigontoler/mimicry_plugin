@@ -69,6 +69,12 @@ endif()
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     # Enabling parallel builds for MSVC
     add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+    add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/arch:AVX>)
+    add_compile_definitions(
+        HWY_COMPILE_ALL_ATTAINABLE=1
+        HWY_WANT_SSE2=1
+        HWY_WANT_SSE4=1
+    )
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE INTERNAL "")
 endif()
 
