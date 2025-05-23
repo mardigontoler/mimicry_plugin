@@ -12,6 +12,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    message("Found (and using) ccache at ${CCACHE_PROGRAM}" )
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include(systematize)
