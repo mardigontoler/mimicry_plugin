@@ -23,4 +23,34 @@ namespace mimicry::Widgets
         std::function<juce::String(double)> mStrValFunc;
     };
 
+
+    class DividerLine : public juce::Component
+    {
+    public:
+        explicit DividerLine(bool isVertical = false)
+                : vertical(isVertical)
+        {
+            setColour(juce::Colours::grey);
+        }
+
+        void setColour(juce::Colour newColour)
+        {
+            colour = newColour;
+            repaint();
+        }
+
+        void paint(juce::Graphics& g) override
+        {
+            g.setColour(colour);
+            if (vertical)
+                g.fillRect(getLocalBounds().withWidth(1));
+            else
+                g.fillRect(getLocalBounds().withHeight(1));
+        }
+
+    private:
+        bool vertical;
+        juce::Colour colour;
+    };
+
 }

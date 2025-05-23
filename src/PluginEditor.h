@@ -68,6 +68,10 @@ private:
     juce::OwnedArray<DelayHeadController> delayHeadControllers;
     juce::OwnedArray<SliderAttachment> rhythmSliderAttachments;
 
+    mimicry::Widgets::DividerLine bannderDivider;
+    mimicry::Widgets::DividerLine delayRowDivider;
+    mimicry::Widgets::DividerLine rightPanelDivider{true};
+
     //========================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MimicAudioProcessorEditor)
 };

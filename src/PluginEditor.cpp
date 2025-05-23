@@ -61,6 +61,10 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor(MimicAudioProcessor& p, Aud
     outputGainAttachment = std::make_unique<SliderAttachment>(valueTreeState, "outputGain", outputGainKnob.getSlider());
     addAndMakeVisible(outputGainKnob);
 
+    addAndMakeVisible(bannderDivider);
+    addAndMakeVisible(delayRowDivider);
+    addAndMakeVisible(rightPanelDivider);
+
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(1125, 540);
@@ -170,6 +174,7 @@ void MimicAudioProcessorEditor::resized()
     delays.flexWrap = FlexBox::Wrap::noWrap;
 
     delays.items.add(FlexItem(topDelays).withFlex(0.5f).withMinHeight(60));
+    delays.items.add(FlexItem(delayRowDivider).withFlex(0.0f).withMinHeight(1).withMaxHeight(1).withMargin(10));
     delays.items.add(FlexItem(bottomDelays).withFlex(0.5f).withMinHeight(60));
 
 
@@ -189,6 +194,7 @@ void MimicAudioProcessorEditor::resized()
     bottomHalf.flexWrap = FlexBox::Wrap::noWrap;
 
     bottomHalf.items.add(FlexItem(delays).withMinHeight(200).withFlex(0.95f));
+    bottomHalf.items.add(FlexItem(rightPanelDivider).withMinWidth(1).withMaxWidth(1).withMargin(10));
     bottomHalf.items.add(FlexItem(rightPanel).withMinHeight(200).withMinWidth(50).withFlex(0.05f));
 
     FlexBox uiFlexBox; // outermost
@@ -198,6 +204,7 @@ void MimicAudioProcessorEditor::resized()
     uiFlexBox.flexWrap = FlexBox::Wrap::noWrap;
 
     uiFlexBox.items.add(FlexItem(bannerFlexBox).withMinHeight(60).withMaxHeight(60));
+    uiFlexBox.items.add(FlexItem(bannderDivider).withMinHeight(1).withMaxHeight(1).withMargin(10));
     uiFlexBox.items.add(FlexItem(bottomHalf).withFlex(1.0f));
 
     uiFlexBox.performLayout(getLocalBounds());

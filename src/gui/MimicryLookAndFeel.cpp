@@ -198,11 +198,6 @@ Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider& slider)
         int availableHeight = localBounds.getHeight();
         int availableWidth = localBounds.getWidth();
 
-        if (name == "Div" && availableWidth > 0)
-        {
-            int x = 5;
-        }
-
         // Find the maximum size that can fit both the rotary part and the text box
         int rotarySize = jmin(availableWidth - textBoxWidth, availableHeight);
 
