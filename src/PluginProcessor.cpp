@@ -321,7 +321,7 @@ void MimicAudioProcessor::processBlock(AudioBuffer<float>& ioAudioBuffer, MidiBu
                     delay.pushSample(channel, nextPitchShifterSample);
 
                     auto delayedSample = delayLineSamples[headIndex][i];
-                    const float gain = *(delayGainParams[headIndex]);
+                    const auto gain = Decibels::decibelsToGain<float>(*(delayGainParams[headIndex]), -60.0f);
                     delayedSample *= gain;
 
                     summedDelayLinesSample += delayedSample;
