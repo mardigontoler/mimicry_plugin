@@ -214,3 +214,11 @@ void MimicAudioProcessorEditor::resized()
     uiFlexBox.performLayout(getLocalBounds());
 
 }
+
+void MimicAudioProcessorEditor::parentHierarchyChanged()
+{
+    // revert to old software renderer. New JUCE 8 renderer makes my fonts look bad on Windows
+    if (const auto peer = getPeer()) {
+        peer->setCurrentRenderingEngine(0);
+    }
+}

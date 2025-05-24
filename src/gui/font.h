@@ -25,8 +25,11 @@ namespace mimicry
 
         static juce::Font getNormalFont(float height)
         {
-            juce::Font font((juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::InterVariable_ttf,
-                                                                                       BinaryData::InterVariable_ttfSize))));
+            // static juce::Font font((juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::InterMedium_ttf,
+            //                                                                            BinaryData::InterMedium_ttfSize))));
+            static juce::Font font((juce::FontOptions(juce::Typeface::createSystemTypefaceFor(BinaryData::InterDisplayBlack_ttf,
+                                                                                       BinaryData::InterDisplayBlack_ttfSize))));
+
             return font.withHeight(height);;
         }
     };

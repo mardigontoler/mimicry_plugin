@@ -4,12 +4,10 @@
 #include "juce_audio_processors/juce_audio_processors.h"
 #include "PluginProcessor.h"
 #include "./gui/MimicryLookAndFeel.h"
-#include "gui/TempoDisplay.h"
 #include "gui/title/TitleLookAndFeel.h"
 #include "gui/DelayHeadController.h"
 #include "gui/WhiteLabelLookAndFeel.h"
 #include "gui/DelayControllerLookAndFeel.h"
-#include "gui/DigitalLookAndFeel.h"
 #include "gui/TempoControls.h"
 
 #include "melatonin_inspector/melatonin_inspector.h"
@@ -32,6 +30,8 @@ public:
     void paint(juce::Graphics&) override;
 
     void resized() override;
+
+    void parentHierarchyChanged() override;
 
 private:
 

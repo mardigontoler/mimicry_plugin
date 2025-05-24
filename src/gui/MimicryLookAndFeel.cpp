@@ -8,7 +8,7 @@
 using namespace juce;
 using namespace mimicry;
 
-mimicry::MimicryLookAndFeel::MimicryLookAndFeel()
+MimicryLookAndFeel::MimicryLookAndFeel()
 {
     setColour(Label::textColourId, Colours::white);
     setColour(Label::backgroundColourId, Colour::fromRGB(22, 22, 22));
@@ -17,14 +17,17 @@ mimicry::MimicryLookAndFeel::MimicryLookAndFeel()
     setColour(Slider::rotarySliderFillColourId, Colors::getBgGradientCol1());
     setColour(Slider::backgroundColourId, Colors::getBgGradientCol1());
     setColour(Slider::thumbColourId, Colors::getPrimaryColor());
+
+    setDefaultSansSerifTypeface(Fonts::getNormalFont(15).getTypefacePtr());
 }
 
-Font mimicry::MimicryLookAndFeel::getLabelFont(Label& /*label*/)
+
+Font MimicryLookAndFeel::GetNormalFont()
 {
     return Fonts::getNormalFont(15);
 }
 
-void mimicry::MimicryLookAndFeel::drawTickBox(
+void MimicryLookAndFeel::drawTickBox(
         Graphics& g, Component& component,
         float x, float y, float w, float h,
         bool ticked, bool isEnabled, bool /*isMouseOverButton*/, bool /*isButtonDown*/)
@@ -58,7 +61,7 @@ void mimicry::MimicryLookAndFeel::drawTickBox(
 }
 
 
-void mimicry::MimicryLookAndFeel::drawLinearSlider(Graphics& g, int x, int y,
+void MimicryLookAndFeel::drawLinearSlider(Graphics& g, int x, int y,
                                                    int width, int height, float sliderPos, float minSliderPos,
                                                    float maxSliderPos, const juce::Slider::SliderStyle style,
                                                    Slider& slider)
@@ -104,7 +107,7 @@ void mimicry::MimicryLookAndFeel::drawLinearSlider(Graphics& g, int x, int y,
 
 }
 
-void mimicry::MimicryLookAndFeel::drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
+void MimicryLookAndFeel::drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
                                                    float rotaryStartAngle, float rotaryEndAngle, Slider& slider)
 {
     using namespace juce;
@@ -145,7 +148,7 @@ void mimicry::MimicryLookAndFeel::drawRotarySlider(Graphics& g, int x, int y, in
     g.fillPath(needle, AffineTransform::rotation(angle, r.getCentreX(), r.getCentreY()));
 }
 
-void mimicry::MimicryLookAndFeel::drawLabel(Graphics& g, Label& label)
+void MimicryLookAndFeel::drawLabel(Graphics& g, Label& label)
 {
     using namespace juce;
     //g.fillAll(label.findColour(Label::backgroundColourId));
