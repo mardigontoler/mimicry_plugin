@@ -1,5 +1,9 @@
 #include "PluginProcessor.h"
+
+#include "detect_targets.h"
+#include "pitch_functions.h"
 #include "PluginEditor.h"
+#include "targets.h"
 #include "util/mimicry_util.h"
 
 
@@ -16,6 +20,17 @@ MimicAudioProcessor::MimicAudioProcessor() : AudioProcessor(
                                              parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
                                              pitchShifters(numStereoDelayLines)
 {
+
+    const uint32_t supported = hwy::SupportedTargets();
+    std::cout << "Supported targets: " << std::hex << supported << std::dec << "\n";
+
+    // Check for specific instruction sets
+    if (supported & HWY_SSE2) std::cout << "SSE2 is supported\n";
+    if (supported & HWY_SSE4) std::cout << "SSE4 is supported\n";
+    if (supported & HWY_AVX2) std::cout << "AVX2 is supported\n";
+    if (supported & HWY_AVX3_ZEN4) std::cout << "AVX3_ZEN4 is supported\n";
+
+
     for (size_t delayIx = 0; delayIx < numStereoDelayLines; delayIx++)
     {
         mDelayLines.emplace_back();

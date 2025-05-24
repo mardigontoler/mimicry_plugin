@@ -8,8 +8,8 @@ namespace mimicry
 {
     // constants
     constexpr int numStereoDelayLines = 16;
-    constexpr double MIN_TEMPO = 30.0f; // bpm
-    constexpr double MAX_TEMPO = 200.0f;
+    constexpr float MIN_TEMPO = 30.0f; // bpm
+    constexpr float MAX_TEMPO = 200.0f;
 
 }
 //==============================================================================

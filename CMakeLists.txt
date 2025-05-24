@@ -22,6 +22,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+# include systematize, a cmake module. Helps mark 3rd party libs as sytem libs to suppress compiler warnings from them.
 include(systematize)
 
 # These seem to work better if added before the project() call.
@@ -69,6 +70,11 @@ endif()
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     # Enabling parallel builds for MSVC
     add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+    add_compile_definitions(
+        HWY_COMPILE_ALL_ATTAINABLE=1
+        HWY_WANT_SSSE3=1
+        HWY_WANT_SSE4=1
+    )
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE INTERNAL "")
 endif()
 
@@ -253,26 +259,6 @@ endif ()
 if (MSVC)
     target_compile_options(mimicry INTERFACE /Zc:__cplusplus)
 endif ()
-
-
-add_executable(benchmark_phase_correct
-    src/benchmark_phase_correct.cpp
-)
-target_link_libraries(benchmark_phase_correct
-    PRIVATE
-    hwy
-    mimicry
-    juce::juce_audio_utils
-    juce::juce_dsp
-)
-target_include_directories(benchmark_phase_correct
-    PRIVATE
-    src/
-    src/pitch
-)
-target_compile_definitions(benchmark_phase_correct PRIVATE
-    JUCE_WEB_BROWSER=0
-)
 
 function(resolve_alias_target output_var target_name)
     if(NOT TARGET "${target_name}")

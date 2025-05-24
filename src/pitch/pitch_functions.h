@@ -27,6 +27,7 @@ namespace pitch_functions
     };
 
     HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs* HWY_RESTRICT args);
+    // HWY_DLLEXPORT void QueryCapabilities();
 
 
-}  // namespace pitch
+}

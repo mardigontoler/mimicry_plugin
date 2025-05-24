@@ -183,8 +183,6 @@ Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider& slider)
 
     // override logic for left/right textboxes, else falsee back to original impl
 
-    const auto& name = slider.getName();
-
     if (slider.isRotary() && (textBoxPos == Slider::TextBoxLeft || textBoxPos == Slider::TextBoxRight))
     {
 
@@ -209,7 +207,7 @@ Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider& slider)
         layout.sliderBounds.translate(shiftAmt, 0);
         layout.sliderBounds = layout.sliderBounds.getIntersection(localBounds);
 
-        auto textBoxX = textBoxPos == Slider::TextBoxLeft ?
+        const auto textBoxX = textBoxPos == Slider::TextBoxLeft ?
                         layout.sliderBounds.getX() - textBoxWidth
                                                           : layout.sliderBounds.getRight();
 
@@ -219,9 +217,8 @@ Slider::SliderLayout MimicryLookAndFeel::getSliderLayout(Slider& slider)
 
         return layout;
 
-    } else
-    {
-        return LookAndFeel_V2::getSliderLayout(slider);
     }
 
+    // else default to original implementation
+    return LookAndFeel_V2::getSliderLayout(slider);
 }
