@@ -35,7 +35,7 @@ public:
 
 private:
 
-//	melatonin::Inspector inspector { *this };
+	melatonin::Inspector inspector { *this };
 
     // reference to the processor
     MimicAudioProcessor& processor;

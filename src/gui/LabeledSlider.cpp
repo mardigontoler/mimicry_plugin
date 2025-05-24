@@ -25,6 +25,18 @@ void LabeledSlider::resized()
     auto labelHeight = label.getFont().getHeight() + 4;
 
     auto bounds = getLocalBounds().toFloat();
-    label.setBounds(bounds.removeFromTop(labelHeight).toNearestInt());
-    knob.setBounds(bounds.toNearestInt());
+    auto knobBounds = bounds.reduced(0.0f, labelHeight);
+    knob.setBounds(knobBounds.toNearestInt());
+
+    if (knob.getName() == "Output Gain")
+    {
+        DBG("Here");
+    }
+    const auto renderedKnobBounds = getLookAndFeel().getSliderLayout(knob).sliderBounds.toFloat();
+
+    auto labelBounds = renderedKnobBounds.withHeight(labelHeight);
+    labelBounds.translate(0.0f, -labelHeight);
+
+    label.setBounds(labelBounds.toNearestInt());
+
 }

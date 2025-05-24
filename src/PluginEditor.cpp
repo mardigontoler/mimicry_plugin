@@ -53,11 +53,15 @@ MimicAudioProcessorEditor::MimicAudioProcessorEditor(MimicAudioProcessor& p, Aud
 
     mixKnob.getSlider().setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     mixKnob.getLabel().setText("Dry/Wet", dontSendNotification);
+    mixKnob.getSlider().setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxRight, true, 30, 20);
+
     mixAttachment = std::make_unique<SliderAttachment>(valueTreeState, "mix", mixKnob.getSlider());
     addAndMakeVisible(mixKnob);
 
     outputGainKnob.getSlider().setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    outputGainKnob.getSlider().setName("Output Gain");
     outputGainKnob.getLabel().setText("Output Gain", dontSendNotification);
+    outputGainKnob.getSlider().setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxRight, true, 30, 20);
     outputGainAttachment = std::make_unique<SliderAttachment>(valueTreeState, "outputGain", outputGainKnob.getSlider());
     addAndMakeVisible(outputGainKnob);
 
