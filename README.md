@@ -7,10 +7,43 @@ A pitch shifted multi-delay plugin
 General:
 - [highway](https://github.com/google/highway)
 - [JUCE (v 8.0.7)](https://github.com/juce-framework/JUCE)
+- [melatonin inspector](https://github.com/sudara/melatonin_inspector)
 
 Windows/Linux:
 - [Intel OneMKL](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
 
+
+Highway, melatonin inspector, and JUCE are included in this repository as git submobules.
+If you didn't clone the project recursively, you can get these sources by running: 
+```bash
+git submodule init
+git submodule update --recursive
+```
+
+
+On Linux, JUCE requires some development packages to be installed.
+For Ubuntu, you can use:
+```bash
+sudo apt update
+sudo apt install libasound2-dev libjack-jackd2-dev \
+    ladspa-sdk \
+    libcurl4-openssl-dev  \
+    libfreetype-dev libfontconfig1-dev \
+    libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \
+    libwebkit2gtk-4.1-dev \
+    libglu1-mesa-dev mesa-common-dev
+```
+
+For Fedora, which isn't explicitly supported in the JUCE docs, I was able to build after running:
+```bash
+sudo dnf install alsa-lib-devel pipewire-jack-audio-connection-kit-devel \
+    ladspa-devel \
+    libcurl-devel \
+    freetype-devel fontconfig-devel \
+    libX11-devel libXcomposite-devel libXcursor-devel libXext-devel libXinerama-devel libXrandr-devel libXrender-devel \
+    webkit2gtk4.1-devel \
+    mesa-libGLU-devel mesa-libGL-devel
+```
 
 
 # Building
