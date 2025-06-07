@@ -21,30 +21,6 @@ namespace mimicry
         static juce::Font GetNormalFont();
 
 
-
-        juce::Font getLabelFont(juce::Label& label) override { return GetNormalFont(); }
-
-        juce::Font getPopupMenuFont() override { return GetNormalFont(); }
-
-        juce::Font getMenuBarFont(juce::MenuBarComponent&, int itemIndex, const juce::String&itemText) override { return GetNormalFont(); }
-
-        juce::Font getSliderPopupFont(juce::Slider&) override { return GetNormalFont(); }
-
-        juce::Font getTabButtonFont(juce::TabBarButton&, float height) override { return GetNormalFont(); }
-
-        juce::Font getSidePanelTitleFont(juce::SidePanel&) override { return GetNormalFont(); }
-
-        juce::Font getAlertWindowTitleFont() override { return GetNormalFont(); }
-
-        juce::Font getAlertWindowMessageFont() override { return GetNormalFont(); }
-
-        juce::Font getAlertWindowFont() override { return GetNormalFont(); }
-
-        juce::Font getComboBoxFont(juce::ComboBox&) override { return GetNormalFont(); }
-
-        juce::Font getTextButtonFont(juce::TextButton&, int buttonHeight) override { return GetNormalFont(); }
-
-
         //        void drawButtonBackground(Graphics& g, Button& button, const Colour& backgroundColour,
 //            bool isMouseOverButton, bool isButtonDown) override
 //        {

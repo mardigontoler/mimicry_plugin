@@ -41,6 +41,14 @@ if (APPLE)
 endif()
 
 
+# Set compiler warning levels
+if (MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-system-headers)
+endif()
+
+
 # Control whether the CTest module invokes enable_testing().
 # Set to false here to prevent numerous unneeded ctest targets from being created when including google highway later
 set(BUILD_TESTING OFF CACHE BOOL "Disable CTest testing")
@@ -179,8 +187,8 @@ target_sources(mimicry PRIVATE
     src/PluginProcessor.cpp
     src/PluginEditor.h
     src/PluginEditor.cpp
-#    src/delay/MultiHeadDelayLine.h
-#    src/delay/StereoMultiHeadDelayLine.h
+    src/delay/MultiHeadDelayLine.h
+    src/delay/StereoMultiHeadDelayLine.h
     src/gui/title/TitleLookAndFeel.h
     src/gui/DelayControllerLookAndFeel.h
     src/gui/DigitalLookAndFeel.h
@@ -295,9 +303,10 @@ set(THIRDPARTY_TARGETS
 foreach(TARGET ${THIRDPARTY_TARGETS})
     if(TARGET ${TARGET})
         resolve_alias_target(actual_target "${TARGET}")
-#        target_compile_options(${actual_target} PRIVATE "-w")
+        if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+            target_compile_options(hwy PRIVATE -w)
+        endif()
         systematize(${actual_target})
-
     endif()
 endforeach()
 

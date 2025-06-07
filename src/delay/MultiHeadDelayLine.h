@@ -85,12 +85,12 @@ public:
 
         }
 
-        auto tol = juce::Tolerance<float>{};
+        // auto tol = juce::Tolerance<float>{};
 
         if (initialDelaysSet[i] && juce::approximatelyEqual(delaySizeChange, 0.0f))
-        { // only set a delta if the delay had already been set before
-
-            // set the delta for this head so that it will be at the target within .5 seconds
+        {
+            // Only set a delta if the delay had already been set before.
+            // Set the delta for this head so that it will be at the target within .5 seconds.
             //float distanceToNewTarget = smoothedReadHeads[i] - targetReadHeads[i];
             const auto numSamplesToGetToTarget = static_cast<size_t> ( static_cast<float>(sampleRate) * 0.5f );
             remainingStepsAtAlteredRate[i] = numSamplesToGetToTarget;
