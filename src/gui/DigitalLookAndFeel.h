@@ -11,7 +11,7 @@ namespace mimicry
     {
         juce::Font getLabelFont(juce::Label& /*label*/) override
         {
-            return Fonts::getSegmentFont(50);
+            return Fonts::getLcdFont(50);
         }
 
     public:

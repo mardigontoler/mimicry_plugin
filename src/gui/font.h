@@ -10,7 +10,7 @@ namespace mimicry
     class Fonts
     {
     public:
-        static juce::Font getSegmentFont(float heigth)
+        static juce::Font getLcdFont(float heigth)
         {
             static juce::Font font((juce::FontOptions(
                     juce::Typeface::createSystemTypefaceFor(BinaryData::DigitalNumbersRegular_ttf,
