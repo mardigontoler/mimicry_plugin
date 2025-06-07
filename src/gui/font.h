@@ -13,8 +13,8 @@ namespace mimicry
         static juce::Font getSegmentFont(float heigth)
         {
             static juce::Font font((juce::FontOptions(
-                    juce::Typeface::createSystemTypefaceFor(BinaryData::Segment74Gml_otf,
-                                                            BinaryData::Segment74Gml_otfSize))));
+                    juce::Typeface::createSystemTypefaceFor(BinaryData::DigitalNumbersRegular_ttf,
+                                                            BinaryData::DigitalNumbersRegular_ttfSize))));
             return font.withHeight(heigth);
         }
 

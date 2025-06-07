@@ -162,9 +162,7 @@ add_subdirectory(highway build_highway)
 juce_add_binary_data(mimicry_binary_data
     SET GENERATE_BINARY_DATA_VERBOSE TRUE
     SOURCES
-        res/CinzelDecorative-Regular.ttf
-        res/Segment7-4Gml.otf
-        res/Ubuntu-Medium.ttf
+        res/digital_numbers/fonts/DigitalNumbers-Regular.ttf
         res/inter/extras/ttf/Inter-Medium.ttf
         res/inter/extras/ttf/InterDisplay-Black.ttf
 )

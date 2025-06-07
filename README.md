@@ -1,13 +1,21 @@
 # mimicry_plugin
-A pitch shifted multi-delay plugin
+
+Mimicry is a multi-delay plugin, with each delay having an independent
+level, feedback, and pitch shift, allowing you to create complex rhythms
+and arpeggios.
 
 
-# Dependencies
+Work is still very much in progress, and it's still not in a very polished state.
 
-General:
-- [highway](https://github.com/google/highway)
+### Roadmap
+
+
+### Dependencies
+
+All platforms:
+- [Google Highway](https://github.com/google/highway)
 - [JUCE (v 8.0.7)](https://github.com/juce-framework/JUCE)
-- [melatonin inspector](https://github.com/sudara/melatonin_inspector)
+- [Melatonin Component Inspector](https://github.com/sudara/melatonin_inspector)
 
 Windows/Linux:
 - [Intel OneMKL](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
@@ -46,7 +54,7 @@ sudo dnf install alsa-lib-devel pipewire-jack-audio-connection-kit-devel \
 ```
 
 
-# Building
+### Building
 
 On Win/Linux, Intel OneMKL needs to be installed (from the link above).
 The CMake script should hopefully detect it with `find_package`.
