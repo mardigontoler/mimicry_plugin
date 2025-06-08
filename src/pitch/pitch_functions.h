@@ -26,8 +26,6 @@ namespace pitch_functions
         PV::PvConstants mPvConstants;
     };
 
-    HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs* HWY_RESTRICT args);
-    // HWY_DLLEXPORT void QueryCapabilities();
-
+    HWY_DLLEXPORT void PhaseCorrectSIMD(const PhaseCorrectArgs* HWY_RESTRICT args);
 
 }

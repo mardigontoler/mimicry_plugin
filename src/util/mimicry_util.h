@@ -4,10 +4,8 @@
 namespace mimicry_util
 {
 
-    /**
-    Approximate number of samples per note value of the given beat divider at the given sample rate.
-    For example, at fs=44.1khz and 120bpm, an eight note (beatDivider = 2)
-    would last for 
+    /*!
+    Returns the approximate number of samples per note value of the given beat divider at the given sample rate.
     */
     inline size_t
     getSamplesPerSubdivision(const double beatsPerMinute, const double sampleRate, const float beatDivider)

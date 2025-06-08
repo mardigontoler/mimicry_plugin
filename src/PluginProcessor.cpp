@@ -14,22 +14,14 @@ using namespace juce;
 MimicAudioProcessor::MimicAudioProcessor() : AudioProcessor(
         BusesProperties()
                 .withInput("Input", AudioChannelSet::mono(), true)
-                .withOutput("Output Dry", AudioChannelSet::mono(), true)
-        //.withOutput ("Output Wet", AudioChannelSet::stereo(), true)
-),
-                                             parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
-                                             pitchShifters(numStereoDelayLines)
+                .withOutput("Output", AudioChannelSet::mono(), true)
+        ),
+        parameters(*this, nullptr, Identifier("Mimicry"), createParameterLayout()),
+        pitchShifters(numStereoDelayLines)
 {
 
     const uint32_t supported = hwy::SupportedTargets();
     std::cout << "Supported targets: " << std::hex << supported << std::dec << "\n";
-
-    // Check for specific instruction sets
-    if (supported & HWY_SSE2) std::cout << "SSE2 is supported\n";
-    if (supported & HWY_SSE4) std::cout << "SSE4 is supported\n";
-    if (supported & HWY_AVX2) std::cout << "AVX2 is supported\n";
-    if (supported & HWY_AVX3_ZEN4) std::cout << "AVX3_ZEN4 is supported\n";
-
 
     for (size_t delayIx = 0; delayIx < numStereoDelayLines; delayIx++)
     {
@@ -95,17 +87,23 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
             std::make_unique<AudioParameterFloat>(
                     "outputGain",
                     "Output Gain",
-                    NormalisableRange<float>(-60.0f, 24.0f, 1.0f),
-                    -60.0f,
-                    AudioParameterFloatAttributes().withStringFromValueFunction([](float value, int length)
-                                                                                {
-                                                                                    String s;
-                                                                                    if (value <= -60.0f)
-                                                                                        s = String("-inf");
-                                                                                    s = String(value, 1) + " dB";
-                                                                                    s = s.substring(0, length);
-                                                                                    return s;
-                                                                                }
+                    NormalisableRange<float>(0.0f, 1.0f, 0.0001f, 0.3f),
+                    0.75f,
+                    AudioParameterFloatAttributes()
+                        .withStringFromValueFunction([](const float value, const int length)
+                            {
+                                String s;
+                                if (value <= -60.0f)
+                                {
+                                    s = String("-inf");
+                                }
+                                else
+                                {
+                                    s = String(value, 1) + " dB";
+                                }
+                                s = s.substring(0, length);
+                                return s;
+                            }
                     )
             )
     );
@@ -118,9 +116,9 @@ AudioProcessorValueTreeState::ParameterLayout MimicAudioProcessor::createParamet
         params.push_back(std::make_unique<AudioParameterFloat>(
                 String("rhythmGain") + String(i),
                 String("Rhythm Gain ") + String(i),
-                -60.0f,
-                24.0f,
-                -60.0f));
+                NormalisableRange<float>(0.0f, 1.0f, 0.0001f, 1.3f),
+                0.0f
+        ));
 
         // then set up #semitones for each tap
         params.push_back(std::make_unique<AudioParameterInt>(
@@ -336,7 +334,7 @@ void MimicAudioProcessor::processBlock(AudioBuffer<float>& ioAudioBuffer, MidiBu
                     delay.pushSample(channel, nextPitchShifterSample);
 
                     auto delayedSample = delayLineSamples[headIndex][i];
-                    const auto gain = Decibels::decibelsToGain<float>(*(delayGainParams[headIndex]), -60.0f);
+                    const auto gain = delayGainParams[headIndex]->load();
                     delayedSample *= gain;
 
                     summedDelayLinesSample += delayedSample;

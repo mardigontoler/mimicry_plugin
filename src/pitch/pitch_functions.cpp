@@ -20,8 +20,6 @@
 #include "hwy/base.h"
 
 
-#include "hwy/contrib/math/math-inl.h"
-
 HWY_BEFORE_NAMESPACE();
 
 
@@ -114,7 +112,7 @@ namespace pitch_functions::HWY_NAMESPACE
         return result;
     }
 
-    HWY_ATTR_NO_MSAN void HwyPhaseCorrect(PhaseCorrectArgs* HWY_RESTRICT args)
+    HWY_ATTR_NO_MSAN void HwyPhaseCorrect(const PhaseCorrectArgs* HWY_RESTRICT args)
     {
         constexpr float tau = 2 * juce::MathConstants<float>::pi;
 
@@ -126,8 +124,8 @@ namespace pitch_functions::HWY_NAMESPACE
         const auto synthesisHopSizeF = static_cast<float>(section->synthesisHopSize);
 
         // Define SIMD types
-        const hwy::HWY_NAMESPACE::ScalableTag<float> d; // largest possible vector
-        const size_t N = Lanes(d);
+        constexpr hwy::HWY_NAMESPACE::ScalableTag<float> d; // largest possible vector
+        constexpr size_t N = Lanes(d);
 
         // split complex fft bins into real and imaginary parts for processing
         for (size_t i = 0; i < fftSize; ++i)
@@ -149,11 +147,11 @@ namespace pitch_functions::HWY_NAMESPACE
 
         for (size_t i = 0; i < fftSize; i += N)
         {
-            auto v_input_phase = Load(d, section->freqFftArgs.data() + i);
-            auto v_omega = Load(d, args->mOmegas + i);
-            auto v_old_input_phase = Load(d, section->oldInputPhases.data() + i);
+            const auto v_input_phase = Load(d, section->freqFftArgs.data() + i);
+            const auto v_omega = Load(d, args->mOmegas + i);
+            const auto v_old_input_phase = Load(d, section->oldInputPhases.data() + i);
 
-            auto v_hop_omega = Mul(v_analysis_hop, v_omega);
+            const auto v_hop_omega = Mul(v_analysis_hop, v_omega);
             auto v_delta = Sub(v_input_phase, v_old_input_phase);
             v_delta = Sub(v_delta, v_hop_omega);
 
@@ -166,7 +164,7 @@ namespace pitch_functions::HWY_NAMESPACE
 
             auto v_inst_freq = Add(v_omega, Div(v_delta, v_analysis_hop));
 
-            auto v_old_output_phase = Load(d, section->oldOutputPhases.data() + i);
+            const auto v_old_output_phase = Load(d, section->oldOutputPhases.data() + i);
             auto v_output_phase = Add(v_old_output_phase, Mul(v_synthesis_hop, v_inst_freq));
 
             // normalize
@@ -182,16 +180,16 @@ namespace pitch_functions::HWY_NAMESPACE
 
             auto v_phase_diff = Sub(v_output_phase, v_input_phase);
             // std::polar(1.0f, phase_diff) is e^(i*phase_diff) = cos(phase_diff) + i * sin(phase_diff)
-            auto v_real = Load(d, section->freqFftReal.data() + i);
-            auto v_imag = Load(d, section->freqFftImag.data() + i);
-            auto v_cos_diff = CosApprox(d, v_phase_diff); // CosApprox(d, v_phase_diff);
-            auto v_sin_diff = SinApprox(d, v_phase_diff); // SinApprox(d, v_phase_diff);
+            const auto v_real = Load(d, section->freqFftReal.data() + i);
+            const auto v_imag = Load(d, section->freqFftImag.data() + i);
+            const auto v_cos_diff = CosApprox(d, v_phase_diff);
+            const auto v_sin_diff = SinApprox(d, v_phase_diff);
 
             // complex multiplication: (a + bi)*(c + di) = ac - bd + i(ad + bc),
             // so (v_real + i v_imag) * (v_cos_diff + i v_sin_diff)
             // = (v_real * v_cos_diff) - ( v_imag * v_sin_diff ) + i ( (v_real * v_sin_diff) + (v_imag * v_cos_diff) )
-            auto v_rotated_real = Sub(Mul(v_real, v_cos_diff), Mul(v_imag, v_sin_diff));
-            auto v_rotated_imag = Add(Mul(v_real, v_sin_diff), Mul(v_imag, v_cos_diff));
+            const auto v_rotated_real = Sub(Mul(v_real, v_cos_diff), Mul(v_imag, v_sin_diff));
+            const auto v_rotated_imag = Add(Mul(v_real, v_sin_diff), Mul(v_imag, v_cos_diff));
 
             Store(v_rotated_real, d, section->freqFftReal.data() + i);
             Store(v_rotated_imag, d, section->freqFftImag.data() + i);
@@ -204,10 +202,7 @@ namespace pitch_functions::HWY_NAMESPACE
         }
     }
 
-
-    // NOLINTNEXTLINE(google-readability-namespace-comments)
-} // namespace pitch_functions::HWY_NAMESPACE
-// namespace
+}
 
 
 HWY_AFTER_NAMESPACE(); // NOLINT(cppcoreguidelines-macro-usage)
@@ -225,17 +220,11 @@ namespace pitch_functions
     HWY_EXPORT(HwyPhaseCorrect);
 
 
-    HWY_DLLEXPORT void PhaseCorrectSIMD(PhaseCorrectArgs* HWY_RESTRICT args)
+    HWY_DLLEXPORT void PhaseCorrectSIMD(const PhaseCorrectArgs* HWY_RESTRICT args)
     {
         const auto ptr = HWY_DYNAMIC_POINTER(HwyPhaseCorrect);
         ptr(args);
     }
-
-    // HWY_DLLEXPORT void PhaseCorrectSIMD()
-    // {
-    //     const auto ptr = HWY_DYNAMIC_POINTER(HwyQueryCapabilities);
-    //     ptr();
-    // }
 }
 
 #endif // HWY_ONCE
