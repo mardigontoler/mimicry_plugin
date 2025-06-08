@@ -1,6 +1,6 @@
 
 
-#include "pitch_functions.h"
+#include "PitchFunctions.h"
 #include "MultiPhaseVocoder.h"
 
 
@@ -210,13 +210,13 @@ void MultiPhaseVocoder::phaseCorrectSIMD(OutputSection& section)
 
     PvConstants constants;
 
-    pitch_functions::PhaseCorrectArgs args{
+    PitchFunctions::PhaseCorrectArgs args{
             &section,
             omegas.data(),
             constants
     };
 
-    pitch_functions::PhaseCorrectSIMD(&args);
+    PitchFunctions::PhaseCorrectSIMD(&args);
 }
 
 

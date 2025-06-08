@@ -4,7 +4,7 @@
 #undef HWY_TARGET_INCLUDE
 // For dynamic dispatch, specify the name of the current file (unfortunately
 // __FILE__ is not reliable) so that foreach_target.h can re-include it.
-#define HWY_TARGET_INCLUDE "pitch_functions.cpp"
+#define HWY_TARGET_INCLUDE "PitchFunctions.cpp"
 
 // Generates code for each enabled target by re-including this source file.
 
@@ -14,7 +14,7 @@
 #include "hwy/highway.h"
 #include "hwy/targets.h"
 
-#include "pitch_functions.h"
+#include "PitchFunctions.h"
 
 #include "hwy/aligned_allocator.h"
 #include "hwy/base.h"
@@ -23,7 +23,7 @@
 HWY_BEFORE_NAMESPACE();
 
 
-namespace pitch_functions::HWY_NAMESPACE
+namespace PitchFunctions::HWY_NAMESPACE
 {
     constexpr float kTwoPI = 2.0f * 3.14159265358979323846f;
     constexpr float kPI = 3.14159265358979323846f;
@@ -213,7 +213,7 @@ HWY_AFTER_NAMESPACE(); // NOLINT(cppcoreguidelines-macro-usage)
 // HWY_ONCE is true for only one of these 'compilation passes'.
 #if HWY_ONCE
 
-namespace pitch_functions
+namespace PitchFunctions
 {
     // This macro declares a static array used for dynamic dispatch; it resides in
     // the same outer namespace that contains FloorLog2.

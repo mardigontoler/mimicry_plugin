@@ -207,8 +207,8 @@ target_sources(mimicry PRIVATE
     src/gui/Widgets.cpp
     src/pitch/MultiPhaseVocoder.cpp
     src/pitch/MultiPhaseVocoder.h
-    src/pitch/pitch_functions.h
-    src/pitch/pitch_functions.cpp
+        src/pitch/PitchFunctions.h
+        src/pitch/PitchFunctions.cpp
     src/util/mimicry_util.h
 )
 

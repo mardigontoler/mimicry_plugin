@@ -1,7 +1,7 @@
 #include "PluginProcessor.h"
 
 #include "detect_targets.h"
-#include "pitch_functions.h"
+#include "PitchFunctions.h"
 #include "PluginEditor.h"
 #include "targets.h"
 #include "util/mimicry_util.h"

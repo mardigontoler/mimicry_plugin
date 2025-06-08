@@ -8,7 +8,7 @@
 // the SIMD instruction set.
 #include "hwy/base.h"  // HWY_RESTRICT
 
-namespace pitch_functions
+namespace PitchFunctions
 {
 
     struct PhaseCorrectArgs
