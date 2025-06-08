@@ -7,8 +7,6 @@ and arpeggios.
 
 Work is still very much in progress, and it's still not in a very polished state.
 
-### Roadmap
-
 
 ### Dependencies
 
@@ -98,3 +96,6 @@ Then build with
 ```bash
 cmake --build . -t mimicry_VST3
 ```
+
+### License
+Please check the [end-user license agreement](EULA.txt).
