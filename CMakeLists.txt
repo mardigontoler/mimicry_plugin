@@ -333,3 +333,25 @@ if (WITH_THREAD_SANITIZER)
         message(WARNING "Thread Sanitizer enabled")
     endif ()
 endif ()
+
+
+
+# Setup testing with Catch2
+
+Include(FetchContent)
+enable_testing()
+
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v3.4.0
+)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+FetchContent_MakeAvailable(Catch2)
+
+add_executable(mimicry_tests
+        tests/test_pitch.cpp
+        tests/test_misc.cpp
+)
+target_link_libraries(mimicry_tests PRIVATE Catch2::Catch2WithMain mimicry ${THIRDPARTY_TARGETS})
+
